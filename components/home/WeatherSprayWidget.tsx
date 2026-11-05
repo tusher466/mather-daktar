@@ -21,35 +21,88 @@ const DIVISIONS: DivisionCoords[] = [
   { nameBn: "সিলেট", lat: 24.8949, lon: 91.8687 },
 ];
 
+interface CachedWeather {
+  temperature: number;
+  humidity: number;
+  windSpeed: number;
+  precipitation: number;
+  lastUpdatedTime: string;
+  timestamp: number;
+}
+
+// Module-level in-memory cache to prevent re-fetching and eliminates tab switching lag
+const weatherCache: Record<string, CachedWeather> = {
+  ঢাকা: {
+    temperature: 28,
+    humidity: 62,
+    windSpeed: 8,
+    precipitation: 0,
+    lastUpdatedTime: "১২:০০",
+    timestamp: Date.now(),
+  },
+};
+
 export const WeatherSprayWidget: React.FC = () => {
   const [selectedDivisionIndex, setSelectedDivisionIndex] = useState<number>(0);
-  const [temperature, setTemperature] = useState<number>(28);
-  const [humidity, setHumidity] = useState<number>(62);
-  const [windSpeed, setWindSpeed] = useState<number>(8);
-  const [precipitation, setPrecipitation] = useState<number>(0);
-  const [isLiveLoading, setIsLiveLoading] = useState<boolean>(true);
-  const [showDetail, setShowDetail] = useState<boolean>(false);
-  const [lastUpdatedTime, setLastUpdatedTime] = useState<string>("");
-
   const activeDivision = DIVISIONS[selectedDivisionIndex];
 
-  const fetchLiveWeather = async (div: DivisionCoords) => {
-    setIsLiveLoading(true);
+  // Initialize immediately from cache if available so there is zero layout shift or lag
+  const initialCache = weatherCache[activeDivision.nameBn];
+  const [temperature, setTemperature] = useState<number>(initialCache?.temperature ?? 28);
+  const [humidity, setHumidity] = useState<number>(initialCache?.humidity ?? 62);
+  const [windSpeed, setWindSpeed] = useState<number>(initialCache?.windSpeed ?? 8);
+  const [precipitation, setPrecipitation] = useState<number>(initialCache?.precipitation ?? 0);
+  const [isLiveLoading, setIsLiveLoading] = useState<boolean>(!initialCache);
+  const [showDetail, setShowDetail] = useState<boolean>(false);
+  const [lastUpdatedTime, setLastUpdatedTime] = useState<string>(initialCache?.lastUpdatedTime ?? "");
+
+  const fetchLiveWeather = async (div: DivisionCoords, force: boolean = false) => {
+    const cached = weatherCache[div.nameBn];
+    const isCacheFresh = cached && Date.now() - cached.timestamp < 1000 * 60 * 10; // 10 minutes cache
+
+    if (cached) {
+      setTemperature(cached.temperature);
+      setHumidity(cached.humidity);
+      setWindSpeed(cached.windSpeed);
+      setPrecipitation(cached.precipitation);
+      setLastUpdatedTime(cached.lastUpdatedTime);
+      setIsLiveLoading(false);
+      if (isCacheFresh && !force) return;
+    } else {
+      setIsLiveLoading(true);
+    }
+
     try {
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${div.lat}&longitude=${div.lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation&timezone=Asia%2FDhaka`;
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         if (data && data.current) {
-          setTemperature(Math.round(data.current.temperature_2m));
-          setHumidity(Math.round(data.current.relative_humidity_2m));
-          setWindSpeed(Math.round(data.current.wind_speed_10m));
-          setPrecipitation(data.current.precipitation || 0);
+          const t = Math.round(data.current.temperature_2m);
+          const h = Math.round(data.current.relative_humidity_2m);
+          const w = Math.round(data.current.wind_speed_10m);
+          const p = data.current.precipitation || 0;
 
           const now = new Date();
           const hours = now.getHours().toString().padStart(2, "0");
           const mins = now.getMinutes().toString().padStart(2, "0");
-          setLastUpdatedTime(`${toBanglaDigits(hours)}:${toBanglaDigits(mins)}`);
+          const timeStr = `${toBanglaDigits(hours)}:${toBanglaDigits(mins)}`;
+
+          setTemperature(t);
+          setHumidity(h);
+          setWindSpeed(w);
+          setPrecipitation(p);
+          setLastUpdatedTime(timeStr);
+
+          // Save to memory cache
+          weatherCache[div.nameBn] = {
+            temperature: t,
+            humidity: h,
+            windSpeed: w,
+            precipitation: p,
+            lastUpdatedTime: timeStr,
+            timestamp: Date.now(),
+          };
         }
       }
     } catch (e) {

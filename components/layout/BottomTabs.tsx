@@ -58,9 +58,9 @@ export const BottomTabs: React.FC = () => {
   return (
     <nav
       aria-label="প্রধান মেনু"
-      className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-ground-border/80 shadow-xl pb-safe"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-ground-border/80 shadow-xl pb-safe"
     >
-      <div className="max-w-xl mx-auto h-16 flex items-center justify-around px-3">
+      <div className="max-w-xl mx-auto h-16 flex items-center justify-around px-2">
         {TABS.map((tab) => {
           const isActive =
             tab.href === "/"
@@ -73,7 +73,8 @@ export const BottomTabs: React.FC = () => {
             <Link
               key={tab.id}
               href={tab.href}
-              className={`flex-1 flex flex-col items-center justify-center py-1 h-full min-h-[56px] transition-all duration-200 active:scale-95 select-none focus:outline-none ${
+              prefetch={true}
+              className={`flex-1 flex flex-col items-center justify-center py-1 h-full min-h-[56px] transition-all duration-150 active:scale-95 select-none focus:outline-none ${
                 isActive
                   ? "text-primary font-bold"
                   : "text-ink-muted hover:text-ink font-medium"

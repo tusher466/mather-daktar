@@ -60,6 +60,9 @@ export const CropGrid: React.FC<CropGridProps> = ({
                     src={crop.imageUrl}
                     alt={crop.nameBn}
                     loading="lazy"
+                    decoding="async"
+                    width={56}
+                    height={56}
                     className="w-full h-full object-cover select-none"
                     onError={() =>
                       setImageErrorMap((prev) => ({ ...prev, [crop.id]: true }))

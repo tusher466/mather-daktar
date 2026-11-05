@@ -14,7 +14,9 @@ import {
   Sprout,
   Sun,
   ShieldCheck,
+  Compass,
 } from "lucide-react";
+import { BangladeshVisualMap } from "./BangladeshVisualMap";
 import { toBanglaDigits } from "@/lib/bangla/digits";
 
 export interface DivisionCropData {
@@ -404,6 +406,7 @@ export const BangladeshCropMap: React.FC = () => {
   const [selectedDivisionId, setSelectedDivisionId] = useState<string>("rangpur");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"map" | "gardenGuide">("map");
+  const [viewMode, setViewMode] = useState<"visual" | "grid">("visual");
 
   const selectedDivision =
     BANGLADESH_DIVISIONS.find((d) => d.id === selectedDivisionId) || BANGLADESH_DIVISIONS[0];
@@ -494,147 +497,246 @@ export const BangladeshCropMap: React.FC = () => {
 
       {activeTab === "map" ? (
         <div className="p-4 sm:p-6 space-y-5">
-          {/* 8 Divisions Horizontal Pills / Grid */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold font-bengali text-ink-muted">
-                বিভাগ নির্বাচন করুন:
-              </span>
-              <span className="text-2xs font-bengali text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                মোট ৮টি কৃষি অঞ্চল
-              </span>
+          {/* Visual Map Mode vs Grid Selector Toggle */}
+          <div className="flex items-center justify-between flex-wrap gap-2 pb-1">
+            <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-2xl border border-stone-200/80">
+              <button
+                type="button"
+                onClick={() => setViewMode("visual")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold font-bengali transition-all ${
+                  viewMode === "visual"
+                    ? "bg-emerald-800 text-white shadow-xs"
+                    : "text-ink-muted hover:text-ink hover:bg-stone-200/60"
+                }`}
+              >
+                <Compass className="w-3.5 h-3.5" />
+                <span>ভিজ্যুয়াল মানচিত্র দৃশ্য</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold font-bengali transition-all ${
+                  viewMode === "grid"
+                    ? "bg-emerald-800 text-white shadow-xs"
+                    : "text-ink-muted hover:text-ink hover:bg-stone-200/60"
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>তালিকা গ্রিড দৃশ্য</span>
+              </button>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {filteredDivisions.map((division) => {
-                const isSelected = division.id === selectedDivisionId;
-                return (
-                  <button
-                    key={division.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedDivisionId(division.id);
-                    }}
-                    className={`p-2.5 rounded-2xl border text-left transition-all active:scale-[0.98] ${
-                      isSelected
-                        ? "bg-emerald-800 text-white border-emerald-800 shadow-md ring-2 ring-emerald-600/30"
-                        : "bg-stone-50 hover:bg-emerald-50/60 text-ink border-ground-border"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <p className="font-bold font-bengali text-sm sm:text-base leading-tight">
-                        {division.nameBn}
-                      </p>
-                      {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-300" />}
-                    </div>
-                    <p
-                      className={`text-2xs font-bengali mt-0.5 truncate ${
-                        isSelected ? "text-emerald-200" : "text-ink-muted"
+            <span className="text-2xs font-bengali text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/80">
+              নির্বাচিত: <strong className="font-bold">{selectedDivision.nameBn}</strong>
+            </span>
+          </div>
+
+          {/* When ViewMode is "visual", show the Visual Map */}
+          {viewMode === "visual" && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+              {/* Left Column: Visual SVG Bangladesh Map */}
+              <div className="lg:col-span-5 flex flex-col items-center">
+                <BangladeshVisualMap
+                  selectedDivisionId={selectedDivisionId}
+                  onSelectDivision={(id) => setSelectedDivisionId(id)}
+                />
+              </div>
+
+              {/* Right Column: Active Division Information Card */}
+              <div className="lg:col-span-7 space-y-4">
+                {/* Division Quick Selector Pills for Mobile/Tablet */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                  {filteredDivisions.map((div) => (
+                    <button
+                      key={div.id}
+                      type="button"
+                      onClick={() => setSelectedDivisionId(div.id)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold font-bengali whitespace-nowrap transition-all ${
+                        div.id === selectedDivisionId
+                          ? "bg-emerald-800 text-white shadow-xs"
+                          : "bg-stone-100 text-ink-muted hover:bg-stone-200"
                       }`}
                     >
-                      {division.primaryCrops[0]?.name.split(" ")[0]} ও{" "}
-                      {division.primaryCrops[1]?.name.split(" ")[0]}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Active Division Information Card */}
-          <div className="bg-stone-50/80 rounded-2xl p-4 sm:p-5 border border-emerald-100/80 space-y-4">
-            {/* Header of Active Division */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-ground-border">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg sm:text-xl font-bold font-bengali text-emerald-950">
-                    {selectedDivision.nameBn}
-                  </h3>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold font-bengali">
-                    {selectedDivision.zone}
-                  </span>
+                      {div.nameBn}
+                    </button>
+                  ))}
                 </div>
-                <p className="text-xs sm:text-sm font-bengali text-ink-muted mt-1">
-                  {selectedDivision.climateFeature}
-                </p>
-              </div>
 
-              {/* Soil Summary Pills */}
-              <div className="flex items-center gap-2 self-start sm:self-auto">
-                <div className="px-3 py-1 rounded-xl bg-white border border-stone-200 text-ink shadow-2xs text-xs font-bengali">
-                  <span className="text-ink-muted">মাটি: </span>
-                  <span className="font-bold text-emerald-800">{selectedDivision.soilType}</span>
-                </div>
-                <div className="px-3 py-1 rounded-xl bg-white border border-stone-200 text-ink shadow-2xs text-xs font-bengali">
-                  <span className="text-ink-muted">পিএইচ (pH): </span>
-                  <span className="font-bold text-amber-800">{selectedDivision.soilPh}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Soil Detail Description */}
-            <div className="flex items-start gap-2.5 bg-white p-3 rounded-xl border border-stone-200/80 text-xs sm:text-sm font-bengali text-ink-muted">
-              <Layers className="w-4 h-4 text-emerald-700 flex-shrink-0 mt-0.5" />
-              <p>
-                <strong className="text-ink font-bold">মাটির বৈশিষ্ট্য: </strong>
-                {selectedDivision.soilDescription}
-              </p>
-            </div>
-
-            {/* List of Primary Crops */}
-            <div>
-              <h4 className="text-xs font-bold font-bengali text-ink-muted uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                <Sprout className="w-4 h-4 text-emerald-700" />
-                <span>এ অঞ্চলের সর্বোচ্চ ফলনশীল ও সেরা ফসলসমূহ:</span>
-              </h4>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {selectedDivision.primaryCrops.map((crop, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3.5 bg-white rounded-2xl border border-stone-200 hover:border-emerald-300 transition-all shadow-2xs hover:shadow-xs space-y-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <h5 className="font-bold font-bengali text-ink text-sm sm:text-base">
-                        {crop.name}
-                      </h5>
-                      <span
-                        className={`text-2xs font-bold font-bengali px-2 py-0.5 rounded-full border ${crop.badgeColor}`}
-                      >
-                        {crop.suitability}
-                      </span>
-                    </div>
-
-                    {crop.variety && (
-                      <p className="text-xs font-bengali text-ink-muted">
-                        <strong className="text-ink">জাত: </strong> {crop.variety}
+                {/* Active Division Card */}
+                <div className="bg-stone-50/90 rounded-2xl p-4 sm:p-5 border border-emerald-100/90 space-y-4 shadow-2xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-ground-border">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg sm:text-xl font-bold font-bengali text-emerald-950">
+                          {selectedDivision.nameBn}
+                        </h3>
+                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold font-bengali">
+                          {selectedDivision.zone}
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm font-bengali text-ink-muted mt-1">
+                        {selectedDivision.climateFeature}
                       </p>
-                    )}
-
-                    <div className="flex items-center gap-1 text-2xs font-bengali text-teal-800 bg-teal-50/80 px-2 py-1 rounded-lg">
-                      <Calendar className="w-3 h-3 flex-shrink-0" />
-                      <span>মৌসুম: {crop.season}</span>
                     </div>
 
-                    <p className="text-xs font-bengali text-ink-muted leading-relaxed">
-                      {crop.notes}
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                      <div className="px-3 py-1 rounded-xl bg-white border border-stone-200 text-ink shadow-2xs text-xs font-bengali">
+                        <span className="text-ink-muted">মাটি: </span>
+                        <span className="font-bold text-emerald-800">{selectedDivision.soilType}</span>
+                      </div>
+                      <div className="px-3 py-1 rounded-xl bg-white border border-stone-200 text-ink shadow-2xs text-xs font-bengali">
+                        <span className="text-ink-muted">পিএইচ: </span>
+                        <span className="font-bold text-amber-800">{selectedDivision.soilPh}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2.5 bg-white p-3 rounded-xl border border-stone-200/80 text-xs sm:text-sm font-bengali text-ink-muted">
+                    <Layers className="w-4 h-4 text-emerald-700 flex-shrink-0 mt-0.5" />
+                    <p>
+                      <strong className="text-ink font-bold">মাটির বৈশিষ্ট্য: </strong>
+                      {selectedDivision.soilDescription}
                     </p>
                   </div>
-                ))}
-              </div>
-            </div>
 
-            {/* Expert Regional Advisory Box */}
-            <div className="bg-amber-50/90 border border-amber-200/80 rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm font-bengali text-amber-950 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold text-amber-900 mb-0.5">স্থানীয় কৃষি বিশেষজ্ঞের পরামর্শ:</p>
-                <p className="text-amber-900/90 leading-relaxed">
-                  {selectedDivision.regionalTips}
-                </p>
+                  {/* Primary crops */}
+                  <div>
+                    <h4 className="text-xs font-bold font-bengali text-ink-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <Sprout className="w-4 h-4 text-emerald-700" />
+                      <span>শীর্ষ উৎপাদিত সেরা ফসলসমূহ:</span>
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {selectedDivision.primaryCrops.map((crop, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3 bg-white rounded-2xl border border-stone-200 hover:border-emerald-300 transition-all shadow-2xs space-y-1.5"
+                        >
+                          <div className="flex items-center justify-between">
+                            <h5 className="font-bold font-bengali text-ink text-sm">
+                              {crop.name}
+                            </h5>
+                            <span
+                              className={`text-2xs font-bold font-bengali px-2 py-0.5 rounded-full border ${crop.badgeColor}`}
+                            >
+                              {crop.suitability}
+                            </span>
+                          </div>
+                          {crop.variety && (
+                            <p className="text-xs font-bengali text-ink-muted">
+                              <strong className="text-ink">জাত: </strong> {crop.variety}
+                            </p>
+                          )}
+                          <p className="text-xs font-bengali text-ink-muted leading-relaxed">
+                            {crop.notes}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Advisory */}
+                  <div className="bg-amber-50/90 border border-amber-200/80 rounded-2xl p-3.5 text-xs sm:text-sm font-bengali text-amber-950 flex items-start gap-2.5">
+                    <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-amber-900 mb-0.5">স্থানীয় কৃষি বিশেষজ্ঞের পরামর্শ:</p>
+                      <p className="text-amber-900/90 leading-relaxed">
+                        {selectedDivision.regionalTips}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* When ViewMode is "grid", show the Full 8-Division Grid Selector */}
+          {viewMode === "grid" && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {filteredDivisions.map((division) => {
+                  const isSelected = division.id === selectedDivisionId;
+                  return (
+                    <button
+                      key={division.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedDivisionId(division.id);
+                      }}
+                      className={`p-3 rounded-2xl border text-left transition-all active:scale-[0.98] ${
+                        isSelected
+                          ? "bg-emerald-800 text-white border-emerald-800 shadow-md ring-2 ring-emerald-600/30"
+                          : "bg-stone-50 hover:bg-emerald-50/60 text-ink border-ground-border"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="font-bold font-bengali text-sm sm:text-base leading-tight">
+                          {division.nameBn}
+                        </p>
+                        {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-300" />}
+                      </div>
+                      <p
+                        className={`text-2xs font-bengali mt-0.5 truncate ${
+                          isSelected ? "text-emerald-200" : "text-ink-muted"
+                        }`}
+                      >
+                        {division.primaryCrops[0]?.name.split(" ")[0]} ও{" "}
+                        {division.primaryCrops[1]?.name.split(" ")[0]}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Active Division Card in Grid view */}
+              <div className="bg-stone-50/90 rounded-2xl p-4 sm:p-5 border border-emerald-100/90 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-ground-border">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg sm:text-xl font-bold font-bengali text-emerald-950">
+                        {selectedDivision.nameBn}
+                      </h3>
+                      <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold font-bengali">
+                        {selectedDivision.zone}
+                      </span>
+                    </div>
+                    <p className="text-xs sm:text-sm font-bengali text-ink-muted mt-1">
+                      {selectedDivision.climateFeature}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="px-3 py-1 rounded-xl bg-white border border-stone-200 text-ink shadow-2xs text-xs font-bengali">
+                      <span className="text-ink-muted">মাটি: </span>
+                      <span className="font-bold text-emerald-800">{selectedDivision.soilType}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {selectedDivision.primaryCrops.map((crop, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3.5 bg-white rounded-2xl border border-stone-200 hover:border-emerald-300 transition-all shadow-2xs space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h5 className="font-bold font-bengali text-ink text-sm sm:text-base">
+                          {crop.name}
+                        </h5>
+                        <span
+                          className={`text-2xs font-bold font-bengali px-2 py-0.5 rounded-full border ${crop.badgeColor}`}
+                        >
+                          {crop.suitability}
+                        </span>
+                      </div>
+                      <p className="text-xs font-bengali text-ink-muted leading-relaxed">
+                        {crop.notes}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         /* Rooftop & Kitchen Gardening Toolkit Tab */

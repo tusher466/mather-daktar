@@ -29,7 +29,7 @@ export const PageShell: React.FC<PageShellProps> = ({ children, showTabs = true 
       )}
 
       {/* Main Responsive Content Area: expands for Website Desktop size */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-3 sm:px-6 md:px-8 pt-4 pb-24 md:pb-20">
+      <main className="flex-1 w-full max-w-5xl mx-auto px-3 sm:px-6 md:px-8 pt-4 pb-24 md:pb-8">
         {children}
       </main>
 

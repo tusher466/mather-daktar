@@ -27,14 +27,13 @@ export class ValidationError extends AppError {
 }
 
 /**
- * Safely maps any server or AI error to a sanitized user response
+ * Safely maps any server or AI error to an actionable user response
  */
 export function formatErrorResponse(error: unknown): {
   error: string;
   userMessageBn: string;
   statusCode: number;
 } {
-  // Never leak internal stack traces or API keys
   if (error instanceof AppError) {
     return {
       error: error.message,
@@ -43,27 +42,63 @@ export function formatErrorResponse(error: unknown): {
     };
   }
 
-  const errStr = String(error);
+  const errStr = String(error?.toString ? error.toString() : error);
 
-  if (errStr.includes("429") || errStr.toLowerCase().includes("quota") || errStr.toLowerCase().includes("resource_exhausted")) {
+  // Missing API Key
+  if (errStr.includes("AI_API_KEY_MISSING") || errStr.includes("is not configured")) {
+    return {
+      error: "AI_API_KEY_MISSING",
+      userMessageBn:
+        "এআই এপিআই কি (AI_API_KEY) পাওয়া যায়নি। দয়া করে Vercel Settings -> Environment Variables-এ AI_API_KEY যোগ করুন (অথবা লোকাল ফাইলে .env.local তৈরি করুন)।",
+      statusCode: 500,
+    };
+  }
+
+  // Invalid API Key
+  if (
+    errStr.includes("AI_API_KEY_INVALID") ||
+    errStr.includes("API key not valid") ||
+    errStr.includes("API_KEY_INVALID") ||
+    errStr.includes("403")
+  ) {
+    return {
+      error: "AI_API_KEY_INVALID",
+      userMessageBn:
+        "এআই এপিআই কি-টি সঠিক নয় বা কাজ করছে না। দয়া করে aistudio.google.com থেকে নতুন এপিআই কি নিয়ে Vercel-এ আপডেট করুন।",
+      statusCode: 401,
+    };
+  }
+
+  // Quota Exceeded / Rate Limit
+  if (
+    errStr.includes("AI_QUOTA_EXCEEDED") ||
+    errStr.includes("429") ||
+    errStr.toLowerCase().includes("quota") ||
+    errStr.toLowerCase().includes("resource_exhausted") ||
+    errStr.toLowerCase().includes("resourceexhausted")
+  ) {
     return {
       error: "Rate limit / quota exceeded",
-      userMessageBn: STRINGS_BN.errors.rateLimit,
+      userMessageBn:
+        "এআই সার্ভারের বিনামূল্যে রিকোয়েস্ট সীমা শেষ হয়েছে। অনুগ্রহ করে ২ মিনিট পর আবার চেষ্টা করুন।",
       statusCode: 429,
     };
   }
 
-  if (errStr.includes("AI_API_KEY")) {
+  // Timeout
+  if (errStr.toLowerCase().includes("timed out") || errStr.toLowerCase().includes("timeout")) {
     return {
-      error: "AI Provider Configuration Missing",
-      userMessageBn: "সার্ভারে এআই কনফিগারেশন পাওয়া যায়নি। অনুগ্রহ করে অ্যাডমিনকে জানান।",
-      statusCode: 500,
+      error: "Request timed out",
+      userMessageBn:
+        "ইন্টারনেট বা এআই রেসপন্সে একটু বেশি সময় লাগছে। দয়া করে সংযোগ ঠিক রেখে আবার চেষ্টা করুন।",
+      statusCode: 504,
     };
   }
 
   return {
     error: "Internal Server Error",
-    userMessageBn: STRINGS_BN.errors.serverError,
+    userMessageBn:
+      "সার্ভারে এআই প্রসেসিং করতে সাময়িক সমস্যা হচ্ছে। দয়া করে আবার চেষ্টা করুন।",
     statusCode: 500,
   };
 }

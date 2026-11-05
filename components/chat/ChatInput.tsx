@@ -53,11 +53,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="fixed bottom-16 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-ground-border pb-safe">
+    <div className="fixed bottom-16 left-0 right-0 z-30 bg-white/95 backdrop-blur-xl border-t border-ground-border/80 pb-safe">
       <div className="max-w-[480px] mx-auto p-3">
         {/* Attached image preview */}
         {attachedImageBase64 && (
-          <div className="relative inline-block mb-2 rounded-xl overflow-hidden border border-ground-border">
+          <div className="relative inline-block mb-2 rounded-2xl overflow-hidden border border-ground-border shadow-xs">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={attachedImageBase64}
@@ -67,15 +67,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             <button
               type="button"
               onClick={() => onAttachImage(null)}
-              className="absolute top-0.5 right-0.5 bg-black/70 text-white rounded-full p-1"
+              className="absolute top-1 right-1 bg-black/70 hover:bg-black text-white rounded-full p-1 transition-colors"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-3 h-3" />
             </button>
           </div>
         )}
 
         <div className="flex items-center gap-2">
-          {/* Optional Attach photo button */}
+          {/* Attach photo button */}
           <input
             ref={fileInputRef}
             type="file"
@@ -87,9 +87,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             aria-label="ছবি সংযুক্ত করুন"
-            className="w-12 h-12 rounded-xl flex items-center justify-center text-ink-muted hover:text-primary bg-ground hover:bg-ground-border transition-colors border border-ground-border flex-shrink-0"
+            className="w-12 h-12 rounded-2xl flex items-center justify-center text-ink-muted hover:text-primary bg-white hover:bg-stone-50 transition-colors border border-ground-border shadow-2xs flex-shrink-0 active:scale-95"
           >
-            <ImagePlus className="w-5 h-5" />
+            <ImagePlus className="w-5 h-5 stroke-[2]" />
           </button>
 
           {/* Text Input Field */}
@@ -105,11 +105,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   ? STRINGS_BN.chat.listening
                   : STRINGS_BN.chat.inputPlaceholder
               }
-              className="w-full min-h-[56px] px-4 rounded-xl border border-ground-border bg-white text-base sm:text-lg font-bengali text-ink focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-ink-muted/50"
+              className="w-full min-h-[56px] px-4 rounded-2xl border border-ground-border bg-white text-base sm:text-lg font-bengali text-ink focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-ink-muted/50 shadow-2xs transition-all"
             />
           </div>
 
-          {/* Large Mic Button (only when recognition is supported) */}
+          {/* Mic Button */}
           {canListen && (
             <MicButton
               isListening={isListening}
@@ -124,9 +124,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             onClick={onSend}
             disabled={isLoading || (!inputText.trim() && !attachedImageBase64)}
             aria-label="পাঠান"
-            className="w-14 h-14 min-w-[56px] min-h-[56px] rounded-2xl bg-primary hover:bg-primary-dark text-white flex items-center justify-center shadow-md active:scale-95 transition-all disabled:opacity-40 select-none flex-shrink-0"
+            className="w-14 h-14 min-w-[56px] min-h-[56px] rounded-2xl bg-gradient-to-r from-[#1E6B39] to-[#145328] hover:from-[#257E44] hover:to-[#175C2D] text-white flex items-center justify-center shadow-md shadow-emerald-950/20 active:scale-95 transition-all disabled:opacity-40 select-none flex-shrink-0"
           >
-            <Send className="w-6 h-6" />
+            <Send className="w-5 h-5" />
           </button>
         </div>
       </div>

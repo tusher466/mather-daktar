@@ -3,6 +3,7 @@
 import React from "react";
 import { ConfidenceLevel, SeverityLevel } from "@/types";
 import { STRINGS_BN } from "@/lib/strings.bn";
+import { ShieldCheck, Sparkles } from "lucide-react";
 
 interface VerdictCardProps {
   cropBn: string;
@@ -19,12 +20,11 @@ export const VerdictCard: React.FC<VerdictCardProps> = ({
   severity,
   thumbnailBase64,
 }) => {
-  // Confidence label and colored bar properties (NOT raw percentage)
   const confidenceMeta = {
     high: {
       label: STRINGS_BN.result.confidenceLevels.high,
-      color: "bg-success",
-      textColor: "text-success",
+      color: "bg-emerald-600",
+      textColor: "text-emerald-700",
       width: "w-full",
     },
     medium: {
@@ -44,24 +44,24 @@ export const VerdictCard: React.FC<VerdictCardProps> = ({
   const severityMeta = {
     high: {
       label: STRINGS_BN.result.severityLevels.high,
-      badgeClass: "bg-danger-light text-danger border-danger/30",
+      badgeClass: "bg-red-50 text-red-700 border-red-200",
     },
     medium: {
       label: STRINGS_BN.result.severityLevels.medium,
-      badgeClass: "bg-harvest-light text-[#8A5200] border-harvest-border",
+      badgeClass: "bg-amber-50 text-amber-800 border-amber-200",
     },
     low: {
       label: STRINGS_BN.result.severityLevels.low,
-      badgeClass: "bg-success-light text-success border-success/30",
+      badgeClass: "bg-emerald-50 text-emerald-800 border-emerald-200",
     },
   }[severity];
 
   return (
-    <div className="bg-white rounded-2xl border border-ground-border p-4 sm:p-5 shadow-sm space-y-4">
-      {/* Photo and Basic Info Row */}
+    <div className="bg-gradient-to-b from-white to-stone-50/50 rounded-3xl border border-ground-border p-5 shadow-sm space-y-4 animate-fade-in">
+      {/* Photo and Problem Info */}
       <div className="flex items-center gap-4">
         {thumbnailBase64 && (
-          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden flex-shrink-0 bg-ground border border-ground-border">
+          <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden flex-shrink-0 bg-stone-900 border border-ground-border shadow-xs">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={thumbnailBase64}
@@ -72,12 +72,12 @@ export const VerdictCard: React.FC<VerdictCardProps> = ({
         )}
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className="text-sm sm:text-base font-bold font-bengali text-primary px-2.5 py-0.5 rounded-full bg-primary-light">
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            <span className="text-xs sm:text-sm font-bold font-bengali text-emerald-800 px-3 py-0.5 rounded-full bg-emerald-100/80 border border-emerald-200">
               {cropBn}
             </span>
             <span
-              className={`text-xs sm:text-sm font-bold font-bengali px-2.5 py-0.5 rounded-full border ${severityMeta.badgeClass}`}
+              className={`text-xs sm:text-sm font-bold font-bengali px-3 py-0.5 rounded-full border ${severityMeta.badgeClass}`}
             >
               {severityMeta.label}
             </span>
@@ -90,18 +90,21 @@ export const VerdictCard: React.FC<VerdictCardProps> = ({
       </div>
 
       {/* Confidence Level Bar - Colored Bar, NOT a raw percentage */}
-      <div className="pt-2 border-t border-ground-border/60">
-        <div className="flex items-center justify-between text-base font-bengali mb-1.5">
-          <span className="text-ink-muted">রোগ নির্ণয়ের নিশ্চয়তা:</span>
-          <span className={`font-bold ${confidenceMeta.textColor}`}>
+      <div className="pt-3 border-t border-ground-border/70">
+        <div className="flex items-center justify-between text-base font-bengali mb-2">
+          <span className="text-ink-muted flex items-center gap-1.5 text-sm font-medium">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>রোগ নির্ণয়ের নিশ্চয়তা:</span>
+          </span>
+          <span className={`font-bold text-base ${confidenceMeta.textColor}`}>
             {confidenceMeta.label}
           </span>
         </div>
 
         {/* Visual Bar Indicator */}
-        <div className="w-full h-3 bg-ground rounded-full overflow-hidden border border-ground-border/50">
+        <div className="w-full h-3 bg-stone-200/70 rounded-full overflow-hidden p-0.5 border border-stone-200">
           <div
-            className={`h-full ${confidenceMeta.color} ${confidenceMeta.width} rounded-full transition-all duration-500`}
+            className={`h-full ${confidenceMeta.color} ${confidenceMeta.width} rounded-full transition-all duration-700 shadow-xs`}
           />
         </div>
       </div>

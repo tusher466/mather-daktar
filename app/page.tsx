@@ -9,7 +9,7 @@ import { LoadingLeaf } from "@/components/diagnose/LoadingLeaf";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { useDiagnose } from "@/hooks/useDiagnose";
 import { STRINGS_BN } from "@/lib/strings.bn";
-import { Sparkles } from "lucide-react";
+import { Sparkles, ShieldCheck } from "lucide-react";
 
 export default function DoctorPage() {
   const {
@@ -36,12 +36,18 @@ export default function DoctorPage() {
       {/* Calm full-screen loading state */}
       {isLoading && <LoadingLeaf isSlow={isSlowLoading} />}
 
-      <div className="space-y-6">
+      <div className="space-y-5">
         {/* Main Modern Heading Banner */}
-        <div className="pt-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-primary text-xs sm:text-sm font-bold font-bengali mb-2 shadow-2xs">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>ডিজিটাল উদ্ভিদ হাসপাতাল</span>
+        <div className="p-4 bg-gradient-to-br from-white via-white to-emerald-50/60 rounded-3xl border border-emerald-900/10 shadow-xs">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100/80 text-emerald-800 text-xs font-bold font-bengali">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>কৃত্রিম বুদ্ধিমত্তা চালিত ফসল ক্লিনিক</span>
+            </div>
+            <div className="flex items-center gap-1 text-[11px] font-bold font-bengali text-emerald-700 bg-white px-2 py-0.5 rounded-full border border-emerald-200">
+              <ShieldCheck className="w-3 h-3 text-emerald-600" />
+              <span>১০০% নিরাপদ</span>
+            </div>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black font-bengali text-ink leading-tight">
             {STRINGS_BN.diagnose.heading}

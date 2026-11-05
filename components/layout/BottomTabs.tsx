@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Stethoscope, MessageSquare, Calendar, History } from "lucide-react";
+import { Stethoscope, MessageSquare, Calendar, History, HelpCircle } from "lucide-react";
 import { STRINGS_BN } from "@/lib/strings.bn";
 
 interface TabItem {
@@ -38,6 +38,12 @@ const TABS: TabItem[] = [
     href: "/history",
     icon: History,
   },
+  {
+    id: "help",
+    label: "সহায়িকা",
+    href: "/help",
+    icon: HelpCircle,
+  },
 ];
 
 export const BottomTabs: React.FC = () => {
@@ -54,7 +60,7 @@ export const BottomTabs: React.FC = () => {
       aria-label="প্রধান মেনু"
       className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-ground-border/80 shadow-xl pb-safe"
     >
-      <div className="max-w-[480px] mx-auto h-16 flex items-center justify-around px-3">
+      <div className="max-w-xl mx-auto h-16 flex items-center justify-around px-3">
         {TABS.map((tab) => {
           const isActive =
             tab.href === "/"
@@ -74,7 +80,7 @@ export const BottomTabs: React.FC = () => {
               }`}
             >
               <div
-                className={`px-3.5 py-1 rounded-full transition-all duration-200 flex items-center justify-center ${
+                className={`px-3 py-1 rounded-full transition-all duration-200 flex items-center justify-center ${
                   isActive
                     ? "bg-gradient-to-r from-emerald-700 to-emerald-800 text-white shadow-sm shadow-emerald-900/20 scale-105"
                     : "text-ink-muted"
@@ -82,7 +88,7 @@ export const BottomTabs: React.FC = () => {
               >
                 <IconComponent className="w-5 h-5 stroke-[2.2]" />
               </div>
-              <span className="text-xs font-bengali mt-0.5 tracking-tight font-semibold">
+              <span className="text-[11px] sm:text-xs font-bengali mt-0.5 tracking-tight font-semibold">
                 {tab.label}
               </span>
             </Link>

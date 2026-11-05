@@ -10,6 +10,7 @@ import { PhotoPicker } from "@/components/diagnose/PhotoPicker";
 import { PhotoPreview } from "@/components/diagnose/PhotoPreview";
 import { LoadingLeaf } from "@/components/diagnose/LoadingLeaf";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { BangladeshCropMap } from "@/components/map/BangladeshCropMap";
 import { useDiagnose } from "@/hooks/useDiagnose";
 import { STRINGS_BN } from "@/lib/strings.bn";
 
@@ -98,6 +99,11 @@ export default function DoctorPage() {
               onUserNoteChange={setUserNote}
             />
           )}
+        </section>
+
+        {/* 3. Bangladesh Crop Cultivation Map & Gardening Guide */}
+        <section aria-label="বাংলাদেশ কৃষি মানচিত্র" className="pt-2">
+          <BangladeshCropMap />
         </section>
       </div>
     </PageShell>

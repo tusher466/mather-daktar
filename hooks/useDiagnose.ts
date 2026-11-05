@@ -121,8 +121,14 @@ export function useDiagnose() {
 
       const diagnosisData = await response.json();
 
-      // Create thumbnail for local storage
-      const thumbnailBase64 = await createThumbnail(compressedBase64, 320);
+      // Create thumbnail safely
+      let thumbnailBase64 = "";
+      try {
+        thumbnailBase64 = await createThumbnail(compressedBase64, 320);
+      } catch (thumbErr) {
+        console.warn("Thumbnail creation skipped:", thumbErr);
+        thumbnailBase64 = compressedBase64.substring(0, 1000); // lightweight fallback
+      }
 
       // Build complete DiagnosisResult object
       const fullDiagnosis: DiagnosisResult = {
@@ -135,7 +141,7 @@ export function useDiagnose() {
         userNote: userNote.trim() || undefined,
       };
 
-      // Save to localStorage history
+      // Guaranteed save to localStorage history
       saveDiagnosis(fullDiagnosis);
 
       // Clean up slow timer

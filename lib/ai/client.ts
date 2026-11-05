@@ -65,11 +65,17 @@ function cleanBase64(base64: string): string {
 function getExpertAgriculturalDiagnosis(crop: string, note?: string): RawDiagnosisResponse {
   const c = crop.toLowerCase();
 
+  const baseResult = {
+    isPlant: true,
+    cropMatched: true,
+    detectedCropBn: null as string | null,
+    imageQuality: "good" as const,
+    retakeReason: null as string | null,
+  };
+
   if (c.includes("ধান") || c.includes("rice")) {
     return {
-      isPlant: true,
-      imageQuality: "good",
-      retakeReason: null,
+      ...baseResult,
       problemType: "disease",
       problemNameBn: "ধানের ব্লাস্ট বা বাদামী দাগ রোগ (Rice Blast / Brown Spot)",
       confidence: "high",
@@ -92,9 +98,7 @@ function getExpertAgriculturalDiagnosis(crop: string, note?: string): RawDiagnos
 
   if (c.includes("আলু") || c.includes("potato")) {
     return {
-      isPlant: true,
-      imageQuality: "good",
-      retakeReason: null,
+      ...baseResult,
       problemType: "disease",
       problemNameBn: "আলুর আগাম বা নাবি ধসা রোগ (Late Blight / Early Blight)",
       confidence: "high",
@@ -117,9 +121,7 @@ function getExpertAgriculturalDiagnosis(crop: string, note?: string): RawDiagnos
 
   if (c.includes("বেগুন") || c.includes("eggplant")) {
     return {
-      isPlant: true,
-      imageQuality: "good",
-      retakeReason: null,
+      ...baseResult,
       problemType: "pest",
       problemNameBn: "বেগুনের ডগা ও ফল ছিদ্রকারী পোকা (Shoot and Fruit Borer)",
       confidence: "high",
@@ -142,9 +144,7 @@ function getExpertAgriculturalDiagnosis(crop: string, note?: string): RawDiagnos
 
   if (c.includes("টমেটো") || c.includes("tomato")) {
     return {
-      isPlant: true,
-      imageQuality: "good",
-      retakeReason: null,
+      ...baseResult,
       problemType: "disease",
       problemNameBn: "টমেটোর পাতা কোঁকড়ানো রোগ (Tomato Leaf Curl Virus)",
       confidence: "high",
@@ -167,9 +167,7 @@ function getExpertAgriculturalDiagnosis(crop: string, note?: string): RawDiagnos
 
   if (c.includes("মরিচ") || c.includes("chili")) {
     return {
-      isPlant: true,
-      imageQuality: "good",
-      retakeReason: null,
+      ...baseResult,
       problemType: "pest",
       problemNameBn: "মরিচের থ্রিপস বা হলুদ মাকড়ের আক্রমণ (Chili Thrips / Mites)",
       confidence: "high",
@@ -192,9 +190,7 @@ function getExpertAgriculturalDiagnosis(crop: string, note?: string): RawDiagnos
 
   // General healthy or common agricultural response
   return {
-    isPlant: true,
-    imageQuality: "good",
-    retakeReason: null,
+    ...baseResult,
     problemType: "nutrient",
     problemNameBn: `${crop} ফসলের পুষ্টিহীনতা ও প্রাথমিক ছত্রাকের লক্ষণ`,
     confidence: "medium",
@@ -283,10 +279,13 @@ export async function generateDiagnosis(
   }
 
   const userPrompt = `
-ফসলের নাম: ${crop}
+ব্যবহারকারীর নির্বাচিত ফসল: ${crop}
 ${note ? `কৃষকের মন্তব্য / লক্ষণ দেখা দেয়ার বিবরণ: "${note}"` : ""}
 
-দয়া করে এই উদ্ভিদের ছবিটি সতর্কভাবে বিশ্লেষণ করুন এবং রোগ, পোকা বা পুষ্টিজনিত সমস্যা চিহ্নিত করে নির্দেশিত JSON ফরম্যাটে উত্তর দিন।
+বিশেষ নির্দেশনা:
+১. ছবিটি সতর্কভাবে বিশ্লেষণ করে নিশ্চিত হও এটি কি সত্যি "${crop}" উদ্ভিদের ছবি?
+২. যদি ছবির ফসলটি নির্বাচিত "${crop}"-এর সাথে স্পষ্ট অমিল হয় (যেমন: নির্বাচিত ফসল "${crop}", কিন্তু ছবিতে ভিন্ন কোনো ফসল/গাছ দেখা যাচ্ছে), তবে অবিলম্বে "cropMatched": false করবে, "detectedCropBn"-এ আসল ফসলের নাম লিখবে এবং "retakeReason"-এ জানাবে যে নির্বাচিত ফসল ও আপলোডকৃত ছবি মিলছে না।
+৩. আর যদি ফসলটি মিলে যায়, তবে "cropMatched": true রেখে নির্দেশিত স্কিমা অনুযায়ী রোগবালাই নির্ণয় ও প্রতিকার প্রস্তুত করবে।
 `.trim();
 
   const rawBase64 = cleanBase64(imageBase64);

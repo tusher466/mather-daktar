@@ -16,7 +16,7 @@ import { shareDiagnosis, ShareResult } from "@/lib/share/share";
 import { useSpeech } from "@/hooks/useSpeech";
 import { DiagnosisResult } from "@/types";
 import { STRINGS_BN } from "@/lib/strings.bn";
-import { AlertCircle, Camera, ChevronLeft } from "lucide-react";
+import { AlertCircle, Camera, ChevronLeft, AlertTriangle, ArrowLeft, RefreshCw } from "lucide-react";
 
 export default function ResultPage() {
   const params = useParams();
@@ -68,7 +68,88 @@ export default function ResultPage() {
     );
   }
 
-  // Retake State: Image is not a plant, blurry, or poor quality (Section 7.3)
+  // 1. Crop Category Mismatch State (Selected crop does not match the image)
+  const isMismatch = diagnosis.cropMatched === false;
+  if (isMismatch) {
+    return (
+      <PageShell showTabs={false}>
+        <div className="space-y-6 pt-4 animate-fade-in max-w-2xl mx-auto">
+          <div className="bg-white rounded-3xl border-2 border-amber-300 p-6 sm:p-8 text-center space-y-5 shadow-lg">
+            <div className="w-16 h-16 rounded-2xl bg-amber-100 text-amber-800 mx-auto flex items-center justify-center shadow-inner">
+              <AlertTriangle className="w-9 h-9 text-amber-700" />
+            </div>
+
+            <div>
+              <span className="inline-block px-3 py-1 rounded-full bg-red-100 text-red-900 border border-red-200 text-xs font-bold font-bengali mb-2">
+                ক্যাটাগরি ও ছবির অমিল
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-black font-bengali text-emerald-950">
+                নির্বাচিত ফসল ও আপলোডকৃত ছবি মিলছে না!
+              </h1>
+            </div>
+
+            {/* Comparison Box */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left font-bengali">
+              <div className="p-3.5 bg-red-50/80 rounded-2xl border border-red-200">
+                <span className="text-[11px] font-bold text-red-700 block uppercase tracking-wide">
+                  ধাপ ১ এ আপনার নির্বাচিত ফসল:
+                </span>
+                <p className="text-base sm:text-lg font-black text-red-950 mt-1">
+                  {diagnosis.cropBn || diagnosis.crop}
+                </p>
+              </div>
+
+              <div className="p-3.5 bg-amber-50/80 rounded-2xl border border-amber-200">
+                <span className="text-[11px] font-bold text-amber-800 block uppercase tracking-wide">
+                  ছবিতে শনাক্তকৃত আসল উদ্ভিদ:
+                </span>
+                <p className="text-base sm:text-lg font-black text-amber-950 mt-1">
+                  {diagnosis.detectedCropBn || "ভিন্ন কোনো ফসল / অজানা"}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-sm sm:text-base font-bengali text-ink leading-relaxed">
+              {diagnosis.retakeReason ||
+                "আপনি যে ফসলটি নির্বাচন করেছেন এবং যে ছবি আপলোড করেছেন তাদের মধ্যে স্পষ্ট অমিল রয়েছে। ভুল চিকিৎসা বা রাসায়নিকের অপপ্রয়োগ রোধে অনুগ্রহ করে সঠিক ফসল বেছে নিন অথবা নির্বাচিত ফসলের ছবি তুলুন।"}
+            </p>
+
+            {diagnosis.thumbnailBase64 && (
+              <div className="w-32 h-32 rounded-2xl overflow-hidden mx-auto border-2 border-amber-200 shadow-xs">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={diagnosis.thumbnailBase64}
+                  alt="আপলোডকৃত ছবি"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <Button
+                variant="primary"
+                size="large"
+                icon={<Camera className="w-5 h-5" />}
+                onClick={() => router.push("/")}
+              >
+                সঠিক ছবি আপলোড করুন
+              </Button>
+              <Button
+                variant="secondary"
+                size="large"
+                icon={<RefreshCw className="w-4 h-4" />}
+                onClick={() => router.push("/")}
+              >
+                ফসল পরিবর্তন করুন
+              </Button>
+            </div>
+          </div>
+        </div>
+      </PageShell>
+    );
+  }
+
+  // 2. Retake State: Image is not a plant, blurry, or poor quality (Section 7.3)
   const isRetake = !diagnosis.isPlant || diagnosis.imageQuality === "poor";
   if (isRetake) {
     return (

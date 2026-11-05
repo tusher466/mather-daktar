@@ -1,4 +1,4 @@
-import { ZodSchema } from "zod";
+import { ZodType } from "zod";
 
 /**
  * Extracts and parses JSON from raw LLM text output.
@@ -47,7 +47,7 @@ export function extractJsonFromText(rawText: string): unknown {
 /**
  * Parses and validates raw LLM text against a Zod schema
  */
-export function parseAndValidate<T>(rawText: string, schema: ZodSchema<T>): T {
+export function parseAndValidate<T>(rawText: string, schema: ZodType<T, any, any>): T {
   const parsed = extractJsonFromText(rawText);
   const result = schema.safeParse(parsed);
   if (!result.success) {

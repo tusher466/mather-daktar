@@ -1,28 +1,39 @@
 import { z } from "zod";
 
-export const DiagnosisSchema = z.object({
-  isPlant: z.boolean(),
-  imageQuality: z.enum(["good", "poor"]),
-  retakeReason: z.string().nullable(),
-  problemType: z.enum([
-    "disease",
-    "pest",
-    "nutrient",
-    "water_stress",
-    "other",
-    "healthy",
-    "unknown",
-  ]),
-  problemNameBn: z.string().min(1),
-  confidence: z.enum(["high", "medium", "low"]),
-  severity: z.enum(["low", "medium", "high"]),
-  whyBn: z.string().min(1),
-  actionsBn: z.array(z.string()).min(1),
-  avoidBn: z.array(z.string()).min(1),
-  chemicalMentioned: z.boolean(),
-  contactOfficer: z.boolean(),
-  possibleAlternativesBn: z.array(z.string()),
-});
+export const DiagnosisSchema = z.preprocess(
+  (val: any) => {
+    if (val && typeof val === "object") {
+      if (val.cropMatched === undefined) val.cropMatched = true;
+      if (val.detectedCropBn === undefined) val.detectedCropBn = null;
+    }
+    return val;
+  },
+  z.object({
+    isPlant: z.boolean(),
+    cropMatched: z.boolean(),
+    detectedCropBn: z.string().nullable(),
+    imageQuality: z.enum(["good", "poor"]),
+    retakeReason: z.string().nullable(),
+    problemType: z.enum([
+      "disease",
+      "pest",
+      "nutrient",
+      "water_stress",
+      "other",
+      "healthy",
+      "unknown",
+    ]),
+    problemNameBn: z.string().min(1),
+    confidence: z.enum(["high", "medium", "low"]),
+    severity: z.enum(["low", "medium", "high"]),
+    whyBn: z.string().min(1),
+    actionsBn: z.array(z.string()).min(1),
+    avoidBn: z.array(z.string()).min(1),
+    chemicalMentioned: z.boolean(),
+    contactOfficer: z.boolean(),
+    possibleAlternativesBn: z.array(z.string()),
+  })
+);
 
 export type RawDiagnosisResponse = z.infer<typeof DiagnosisSchema>;
 

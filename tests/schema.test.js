@@ -4,6 +4,8 @@ const { z } = require('zod');
 
 const DiagnosisSchema = z.object({
   isPlant: z.boolean(),
+  cropMatched: z.boolean().default(true),
+  detectedCropBn: z.string().nullable().default(null),
   imageQuality: z.enum(["good", "poor"]),
   retakeReason: z.string().nullable(),
   problemType: z.enum([
@@ -85,4 +87,29 @@ test('DiagnosisSchema rejects invalid missing required fields', () => {
 
   const parsed = DiagnosisSchema.safeParse(invalidData);
   assert.equal(parsed.success, false);
+});
+
+test('DiagnosisSchema correctly validates crop category mismatch condition', () => {
+  const mismatchData = {
+    isPlant: true,
+    cropMatched: false,
+    detectedCropBn: "টমেটো",
+    imageQuality: "good",
+    retakeReason: "নির্বাচিত ফসলের সাথে আপলোডকৃত ছবির মিল নেই।",
+    problemType: "other",
+    problemNameBn: "ফসলের ক্যাটাগরি ও ছবির অমিল",
+    confidence: "high",
+    severity: "low",
+    whyBn: "নির্বাচিত ফসল এবং আপলোডকৃত উদ্ভিদের প্রজাতি ভিন্ন।",
+    actionsBn: ["ওপরের তালিকা থেকে সঠিক ফসল নির্বাচন করুন।"],
+    avoidBn: ["ভুল ফসল নির্বাচন করে কীটনাশক প্রয়োগ করবেন না।"],
+    chemicalMentioned: false,
+    contactOfficer: false,
+    possibleAlternativesBn: []
+  };
+
+  const parsed = DiagnosisSchema.safeParse(mismatchData);
+  assert.equal(parsed.success, true);
+  assert.equal(parsed.data.cropMatched, false);
+  assert.equal(parsed.data.detectedCropBn, "টমেটো");
 });

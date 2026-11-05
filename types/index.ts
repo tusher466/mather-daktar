@@ -17,6 +17,8 @@ export interface DiagnosisResult {
   cropBn: string;
   thumbnailBase64: string; // Small size thumbnail (max 320px) for history
   isPlant: boolean;
+  cropMatched?: boolean; // Whether the uploaded image matches the selected crop category
+  detectedCropBn?: string | null; // Name of the actual crop detected in image if mismatched
   imageQuality: ImageQuality;
   retakeReason: string | null;
   problemType: ProblemType;

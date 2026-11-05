@@ -38,9 +38,17 @@ function ChatContent() {
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const initialLoadRef = useRef<boolean>(true);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Avoid scrolling window down on initial mount so switching tabs is instant and stable
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
+    if (messages.length > 1 || isLoading) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   }, [messages, isLoading]);
 
   const handleToggleListening = () => {

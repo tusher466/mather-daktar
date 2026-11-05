@@ -564,80 +564,80 @@ export const BangladeshCropMap: React.FC = () => {
 
                 {/* Active Division Card */}
                 <div className="bg-stone-50/90 rounded-2xl p-4 sm:p-5 border border-emerald-100/90 space-y-4 shadow-2xs">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-ground-border">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-lg sm:text-xl font-bold font-bengali text-emerald-950">
-                          {selectedDivision.nameBn}
-                        </h3>
-                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold font-bengali">
-                          {selectedDivision.zone}
-                        </span>
-                      </div>
-                      <p className="text-xs sm:text-sm font-bengali text-ink-muted mt-1">
-                        {selectedDivision.climateFeature}
-                      </p>
+                  {/* Clean, spacious header with zero overlap */}
+                  <div className="flex flex-col gap-2 pb-3 border-b border-ground-border">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-xl sm:text-2xl font-black font-bengali text-emerald-950">
+                        {selectedDivision.nameBn}
+                      </h3>
+                      <span className="text-xs px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold font-bengali border border-emerald-200">
+                        {selectedDivision.zone}
+                      </span>
                     </div>
-
-                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <p className="text-xs sm:text-sm font-bengali text-ink-muted leading-relaxed">
+                      {selectedDivision.climateFeature}
+                    </p>
+                    <div className="flex items-center gap-2 flex-wrap pt-1">
                       <div className="px-3 py-1 rounded-xl bg-white border border-stone-200 text-ink shadow-2xs text-xs font-bengali">
                         <span className="text-ink-muted">মাটি: </span>
                         <span className="font-bold text-emerald-800">{selectedDivision.soilType}</span>
                       </div>
                       <div className="px-3 py-1 rounded-xl bg-white border border-stone-200 text-ink shadow-2xs text-xs font-bengali">
-                        <span className="text-ink-muted">পিএইচ: </span>
+                        <span className="text-ink-muted">পিএইচ (pH): </span>
                         <span className="font-bold text-amber-800">{selectedDivision.soilPh}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-2.5 bg-white p-3 rounded-xl border border-stone-200/80 text-xs sm:text-sm font-bengali text-ink-muted">
+                  <div className="flex items-start gap-2.5 bg-white p-3.5 rounded-xl border border-stone-200/80 text-xs sm:text-sm font-bengali text-ink-muted">
                     <Layers className="w-4 h-4 text-emerald-700 flex-shrink-0 mt-0.5" />
-                    <p>
+                    <p className="leading-relaxed">
                       <strong className="text-ink font-bold">মাটির বৈশিষ্ট্য: </strong>
                       {selectedDivision.soilDescription}
                     </p>
                   </div>
 
-                  {/* Primary crops */}
+                  {/* Primary crops with spacious cards and no text cut-off */}
                   <div>
-                    <h4 className="text-xs font-bold font-bengali text-ink-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <h4 className="text-xs font-bold font-bengali text-ink-muted uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
                       <Sprout className="w-4 h-4 text-emerald-700" />
                       <span>শীর্ষ উৎপাদিত সেরা ফসলসমূহ:</span>
                     </h4>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {selectedDivision.primaryCrops.map((crop, idx) => (
                         <div
                           key={idx}
-                          className="p-3 bg-white rounded-2xl border border-stone-200 hover:border-emerald-300 transition-all shadow-2xs space-y-1.5"
+                          className="p-4 bg-white rounded-2xl border border-stone-200 hover:border-emerald-300 transition-all shadow-2xs flex flex-col justify-between"
                         >
-                          <div className="flex items-center justify-between">
-                            <h5 className="font-bold font-bengali text-ink text-sm">
-                              {crop.name}
-                            </h5>
-                            <span
-                              className={`text-2xs font-bold font-bengali px-2 py-0.5 rounded-full border ${crop.badgeColor}`}
-                            >
-                              {crop.suitability}
-                            </span>
-                          </div>
-                          {crop.variety && (
-                            <p className="text-xs font-bengali text-ink-muted">
-                              <strong className="text-ink">জাত: </strong> {crop.variety}
+                          <div>
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-1.5 mb-2">
+                              <h5 className="font-bold font-bengali text-ink text-sm sm:text-base leading-snug">
+                                {crop.name}
+                              </h5>
+                              <span
+                                className={`self-start text-xs font-bold font-bengali px-2.5 py-0.5 rounded-full border whitespace-nowrap ${crop.badgeColor}`}
+                              >
+                                {crop.suitability}
+                              </span>
+                            </div>
+                            {crop.variety && (
+                              <p className="text-xs font-bengali text-ink-muted mb-1.5">
+                                <strong className="text-ink">জাত: </strong> {crop.variety}
+                              </p>
+                            )}
+                            <p className="text-xs sm:text-sm font-bengali text-ink-muted leading-relaxed">
+                              {crop.notes}
                             </p>
-                          )}
-                          <p className="text-xs font-bengali text-ink-muted leading-relaxed">
-                            {crop.notes}
-                          </p>
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* Advisory */}
-                  <div className="bg-amber-50/90 border border-amber-200/80 rounded-2xl p-3.5 text-xs sm:text-sm font-bengali text-amber-950 flex items-start gap-2.5">
-                    <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div className="bg-amber-50/90 border border-amber-200/80 rounded-2xl p-4 text-xs sm:text-sm font-bengali text-amber-950 flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="font-bold text-amber-900 mb-0.5">স্থানীয় কৃষি বিশেষজ্ঞের পরামর্শ:</p>
                       <p className="text-amber-900/90 leading-relaxed">
@@ -690,24 +690,26 @@ export const BangladeshCropMap: React.FC = () => {
 
               {/* Active Division Card in Grid view */}
               <div className="bg-stone-50/90 rounded-2xl p-4 sm:p-5 border border-emerald-100/90 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-ground-border">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-lg sm:text-xl font-bold font-bengali text-emerald-950">
-                        {selectedDivision.nameBn}
-                      </h3>
-                      <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold font-bengali">
-                        {selectedDivision.zone}
-                      </span>
-                    </div>
-                    <p className="text-xs sm:text-sm font-bengali text-ink-muted mt-1">
-                      {selectedDivision.climateFeature}
-                    </p>
+                <div className="flex flex-col gap-2 pb-3 border-b border-ground-border">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-xl sm:text-2xl font-black font-bengali text-emerald-950">
+                      {selectedDivision.nameBn}
+                    </h3>
+                    <span className="text-xs px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold font-bengali border border-emerald-200">
+                      {selectedDivision.zone}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <p className="text-xs sm:text-sm font-bengali text-ink-muted leading-relaxed">
+                    {selectedDivision.climateFeature}
+                  </p>
+                  <div className="flex items-center gap-2 flex-wrap pt-1">
                     <div className="px-3 py-1 rounded-xl bg-white border border-stone-200 text-ink shadow-2xs text-xs font-bengali">
                       <span className="text-ink-muted">মাটি: </span>
                       <span className="font-bold text-emerald-800">{selectedDivision.soilType}</span>
+                    </div>
+                    <div className="px-3 py-1 rounded-xl bg-white border border-stone-200 text-ink shadow-2xs text-xs font-bengali">
+                      <span className="text-ink-muted">পিএইচ (pH): </span>
+                      <span className="font-bold text-amber-800">{selectedDivision.soilPh}</span>
                     </div>
                   </div>
                 </div>
@@ -716,21 +718,28 @@ export const BangladeshCropMap: React.FC = () => {
                   {selectedDivision.primaryCrops.map((crop, idx) => (
                     <div
                       key={idx}
-                      className="p-3.5 bg-white rounded-2xl border border-stone-200 hover:border-emerald-300 transition-all shadow-2xs space-y-1.5"
+                      className="p-4 bg-white rounded-2xl border border-stone-200 hover:border-emerald-300 transition-all shadow-2xs flex flex-col justify-between"
                     >
-                      <div className="flex items-center justify-between">
-                        <h5 className="font-bold font-bengali text-ink text-sm sm:text-base">
-                          {crop.name}
-                        </h5>
-                        <span
-                          className={`text-2xs font-bold font-bengali px-2 py-0.5 rounded-full border ${crop.badgeColor}`}
-                        >
-                          {crop.suitability}
-                        </span>
+                      <div>
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-1.5 mb-2">
+                          <h5 className="font-bold font-bengali text-ink text-sm sm:text-base leading-snug">
+                            {crop.name}
+                          </h5>
+                          <span
+                            className={`self-start text-xs font-bold font-bengali px-2.5 py-0.5 rounded-full border whitespace-nowrap ${crop.badgeColor}`}
+                          >
+                            {crop.suitability}
+                          </span>
+                        </div>
+                        {crop.variety && (
+                          <p className="text-xs font-bengali text-ink-muted mb-1.5">
+                            <strong className="text-ink">জাত: </strong> {crop.variety}
+                          </p>
+                        )}
+                        <p className="text-xs sm:text-sm font-bengali text-ink-muted leading-relaxed">
+                          {crop.notes}
+                        </p>
                       </div>
-                      <p className="text-xs font-bengali text-ink-muted leading-relaxed">
-                        {crop.notes}
-                      </p>
                     </div>
                   ))}
                 </div>

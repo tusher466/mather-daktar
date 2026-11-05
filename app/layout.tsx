@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Noto_Sans_Bengali } from "next/font/google";
 import "./globals.css";
 import { STRINGS_BN } from "@/lib/strings.bn";
+import { ClientShell } from "@/components/layout/ClientShell";
 
 const notoBengali = Noto_Sans_Bengali({
   subsets: ["bengali"],
@@ -37,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="bn" className={notoBengali.variable}>
       <body className="min-h-screen bg-ground text-ink antialiased">
-        {children}
+        <ClientShell>{children}</ClientShell>
       </body>
     </html>
   );

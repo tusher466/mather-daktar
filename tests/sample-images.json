@@ -1,0 +1,50 @@
+[
+  {
+    "id": "sample-01-healthy-rice",
+    "crop": "ধান",
+    "condition": "সুস্থ গাছ (Healthy)",
+    "description": "সবুজ ও সতেজ ধানের চারা, কোনো রোগ বা পোকার আক্রমণ নেই।",
+    "expectedProblemType": "healthy",
+    "expectedConfidence": "high"
+  },
+  {
+    "id": "sample-02-rice-blast",
+    "crop": "ধান",
+    "condition": "ব্লাস্ট রোগ (Fungal Spot)",
+    "description": "ধানের পাতায় বাদামী রঙের চোখের মতো দাগ ও অগ্রভাগ শুকিয়ে যাওয়া।",
+    "expectedProblemType": "disease",
+    "expectedConfidence": "high"
+  },
+  {
+    "id": "sample-03-eggplant-borer",
+    "crop": "বেগুন",
+    "condition": "ডগা ও ফল ছিদ্রকারী পোকা (Insect Damage)",
+    "description": "বেগুনের কচি ডগা নুইয়ে পড়া এবং ফলের গায়ে ছিদ্র ও বিষ্ঠা।",
+    "expectedProblemType": "pest",
+    "expectedConfidence": "high"
+  },
+  {
+    "id": "sample-04-tomato-nitrogen-deficiency",
+    "crop": "টমেটো",
+    "condition": "নাইট্রোজেনের অভাব (Nutrient Yellowing)",
+    "description": "নিচের পাতাগুলো হালকা হলুদ হয়ে যাওয়া, গাছের বৃদ্ধি কমে যাওয়া।",
+    "expectedProblemType": "nutrient",
+    "expectedConfidence": "medium"
+  },
+  {
+    "id": "sample-05-blurry-leaf",
+    "crop": "আলু",
+    "condition": "অস্পষ্ট ও ঘোলা ছবি (Blurry Photo)",
+    "description": "ক্যামেরা নড়ে গিয়ে ছবি ঘোলা ও অন্ধকার হয়ে গেছে।",
+    "expectedImageQuality": "poor",
+    "expectedAction": "retake"
+  },
+  {
+    "id": "sample-06-non-plant",
+    "crop": "পাট",
+    "condition": "উদ্ভিদ নয় (Non-plant Photo)",
+    "description": "মাটির ওপর পড়ে থাকা প্লাস্টিকের বোতল বা চায়ের কাপ।",
+    "expectedIsPlant": false,
+    "expectedAction": "retake"
+  }
+]

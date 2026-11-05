@@ -66,6 +66,10 @@ export type RawSeasonResponse = z.infer<typeof SeasonSchema>;
 
 export const DiagnoseRequestSchema = z.object({
   crop: z.string().min(1),
+  cropId: z.string().optional(),
+  fileName: z.string().optional(),
+  detectedCropHint: z.string().optional(),
+  isClientMismatch: z.boolean().optional(),
   imageBase64: z.string().min(1),
   mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
   note: z.string().optional(),

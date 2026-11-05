@@ -12,6 +12,14 @@ import {
   RawSeasonResponse,
 } from "./schemas";
 import { parseAndValidate } from "./parse";
+import { detectCropFromFileName } from "../image/classify";
+
+export interface DiagnosisOptions {
+  cropId?: string;
+  fileName?: string;
+  detectedCropHint?: string;
+  isClientMismatch?: boolean;
+}
 
 /**
  * Universal API Key discovery supporting all common environment variable names
@@ -62,7 +70,46 @@ function cleanBase64(base64: string): string {
  * Comprehensive Agricultural Expert Knowledge Base for Resilient Fallback
  * Ensures the app NEVER crashes or blocks a farmer/judge even if remote API credentials fail.
  */
-function getExpertAgriculturalDiagnosis(crop: string, note?: string): RawDiagnosisResponse {
+function getExpertAgriculturalDiagnosis(
+  crop: string,
+  note?: string,
+  options?: DiagnosisOptions
+): RawDiagnosisResponse {
+  const fromFile = detectCropFromFileName(options?.fileName);
+  const isMismatch =
+    options?.isClientMismatch ||
+    (fromFile && fromFile.nameBn && !crop.includes(fromFile.nameBn));
+
+  if (isMismatch) {
+    const detectedName =
+      options?.detectedCropHint ||
+      fromFile?.nameBn ||
+      "ভিন্ন কোনো উদ্ভিদ বা বস্তু";
+
+    return {
+      isPlant: fromFile?.id !== "non_plant",
+      cropMatched: false,
+      detectedCropBn: detectedName,
+      imageQuality: "good",
+      retakeReason: `নির্বাচিত ফসলের সাথে আপলোড করা ছবির মিল নেই। আপনি নির্বাচন করেছেন '${crop}', কিন্তু ছবিটি '${detectedName}'-এর। অনুগ্রহ করে সঠিক ফসলের ছবি দিন অথবা ওপরের তালিকা থেকে সংশ্লিষ্ট ফসলটি নির্বাচন করুন।`,
+      problemType: "other",
+      problemNameBn: "ফসলের ক্যাটাগরি ও ছবির অমিল",
+      confidence: "high",
+      severity: "low",
+      whyBn: `নির্বাচিত ফসল '${crop}' এবং আপলোডকৃত উদ্ভিদের প্রজাতি সম্পূর্ণ ভিন্ন। ভুল চিকিৎসা বা সারের অপপ্রয়োগ এড়াতে সঠিক ফসল নির্বাচন করা আবশ্যক।`,
+      actionsBn: [
+        "ওপরের তালিকা থেকে সঠিক ফসলটি নির্বাচন করুন।",
+        "অথবা আপনার নির্বাচিত ফসলের আক্রান্ত অংশের স্পষ্ট ছবি আপলোড করুন।"
+      ],
+      avoidBn: [
+        "ভুল ফসল নির্বাচন করে কোনো বালাইনাশক বা রাসায়নিক স্প্রে করবেন না।"
+      ],
+      chemicalMentioned: false,
+      contactOfficer: false,
+      possibleAlternativesBn: []
+    };
+  }
+
   const c = crop.toLowerCase();
 
   const baseResult = {
@@ -267,25 +314,48 @@ export async function generateDiagnosis(
   crop: string,
   imageBase64: string,
   mimeType: string,
-  note?: string
+  note?: string,
+  options?: DiagnosisOptions
 ): Promise<RawDiagnosisResponse> {
   const apiKey = getApiKey();
   const provider = getProvider();
 
+  // Immediate mismatch check from filename or client-side detection
+  const fromFile = detectCropFromFileName(options?.fileName);
+  const isMismatchDetected =
+    options?.isClientMismatch ||
+    (fromFile && fromFile.nameBn && !crop.includes(fromFile.nameBn)) ||
+    fromFile?.id === "non_plant";
+
+  if (isMismatchDetected) {
+    console.info("[Diagnose] Category mismatch detected prior to remote AI call.");
+    return getExpertAgriculturalDiagnosis(crop, note, options);
+  }
+
   // If no API key configured yet, provide robust agricultural expert analysis
   if (!apiKey) {
     console.info("[Diagnose] No API key detected; providing expert agricultural diagnosis.");
-    return getExpertAgriculturalDiagnosis(crop, note);
+    return getExpertAgriculturalDiagnosis(crop, note, options);
   }
 
   const userPrompt = `
-ব্যবহারকারীর নির্বাচিত ফসল: ${crop}
+ব্যবহারকারীর নির্বাচিত ফসল: "${crop}"
 ${note ? `কৃষকের মন্তব্য / লক্ষণ দেখা দেয়ার বিবরণ: "${note}"` : ""}
 
-বিশেষ নির্দেশনা:
-১. ছবিটি সতর্কভাবে বিশ্লেষণ করে নিশ্চিত হও এটি কি সত্যি "${crop}" উদ্ভিদের ছবি?
-২. যদি ছবির ফসলটি নির্বাচিত "${crop}"-এর সাথে স্পষ্ট অমিল হয় (যেমন: নির্বাচিত ফসল "${crop}", কিন্তু ছবিতে ভিন্ন কোনো ফসল/গাছ দেখা যাচ্ছে), তবে অবিলম্বে "cropMatched": false করবে, "detectedCropBn"-এ আসল ফসলের নাম লিখবে এবং "retakeReason"-এ জানাবে যে নির্বাচিত ফসল ও আপলোডকৃত ছবি মিলছে না।
-৩. আর যদি ফসলটি মিলে যায়, তবে "cropMatched": true রেখে নির্দেশিত স্কিমা অনুযায়ী রোগবালাই নির্ণয় ও প্রতিকার প্রস্তুত করবে।
+🚨 অতি জরুরি বাধ্যতামূলক দুই-ধাপ যাচাইকরণ নিয়ম (TWO-STAGE VERIFICATION RULE):
+ধাপ ১ (উদ্ভিদের প্রজাতি নিশ্চিতকরণ):
+প্রথমে ছবিটি সতর্কভাবে পর্যবেক্ষণ করে ছবিতে দৃশ্যমান উদ্ভিদ বা ফসলটি শনাক্ত করো।
+- ছবিতে দৃশ্যমান ফসলটি কি সত্যি "${crop}"?
+- যদি এটি "${crop}" না হয় (যেমন: ব্যবহারকারী ধান নির্বাচন করেছে কিন্তু ছবিতে বেগুন, টমেটো, আলু, মরিচ, বা ভিন্ন কোনো উদ্ভিদ/বস্তু রয়েছে):
+  ১) অবিলম্বে "cropMatched": false করবে!
+  ২) "detectedCropBn"-এ ছবিতে আসলে যা দেখতে পাচ্ছ তার বাংলা নাম লিখবে (যেমন: "বেগুন", "টমেটো", "আলু", ইত্যাদি)।
+  ৩) "problemType": "other"
+  ৪) "problemNameBn": "ফসলের ক্যাটাগরি ও ছবির অমিল"
+  ৫) "retakeReason": "নির্বাচিত ফসল '${crop}', কিন্তু আপলোডকৃত ছবিটি [আসল ফসলের নাম]-এর। অনুগ্রহ করে সঠিক ফসল নির্বাচন করুন বা সঠিক ছবি দিন।"
+  ৬) কোনো কাল্পনিক রোগের নাম লিখবে না এবং রোগ নির্ণয় বন্ধ রাখবে।
+
+ধাপ ২ (যদি ফসল সত্যি "${crop}" হয়):
+- "cropMatched": true রেখে নির্দেশিত স্কিমা অনুযায়ী রোগবালাই নির্ণয় ও সঠিক প্রতিকার প্রস্তুত করো।
 `.trim();
 
   const rawBase64 = cleanBase64(imageBase64);
@@ -342,7 +412,7 @@ ${note ? `কৃষকের মন্তব্য / লক্ষণ দেখ�
     );
   } catch (err: any) {
     console.warn("[Diagnose] Remote AI call failed; falling back to expert diagnostic knowledge base:", err?.message);
-    return getExpertAgriculturalDiagnosis(crop, note);
+    return getExpertAgriculturalDiagnosis(crop, note, options);
   }
 }
 

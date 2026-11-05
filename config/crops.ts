@@ -95,7 +95,7 @@ export const CROPS: CropConfig[] = [
     nameBn: "বাঁধাকপি/ফুলকপি",
     nameEn: "Cabbage & Cauliflower",
     icon: "Shrub",
-    imageUrl: "https://images.unsplash.com/photo-1594282486552-05b4d80fbb9f?w=360&h=360&fit=crop&auto=format&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1598030304671-5aa1d6f21128?w=360&h=360&fit=crop&auto=format&q=80",
     color: "#388E3C",
     commonInBangladesh: true,
   },

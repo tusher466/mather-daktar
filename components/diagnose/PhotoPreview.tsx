@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { RotateCcw, ScanLine, MessageSquarePlus, Sparkles } from "lucide-react";
+import { RotateCcw, ScanLine, MessageSquarePlus, Sparkles, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { STRINGS_BN } from "@/lib/strings.bn";
 
@@ -14,6 +14,10 @@ interface PhotoPreviewProps {
   onToggleNoteField: () => void;
   userNote: string;
   onUserNoteChange: (note: string) => void;
+  mismatchWarning?: string | null;
+  detectedCropName?: string | null;
+  detectedCropId?: string | null;
+  onSwitchCrop?: (cropId: string) => void;
 }
 
 export const PhotoPreview: React.FC<PhotoPreviewProps> = ({
@@ -25,6 +29,10 @@ export const PhotoPreview: React.FC<PhotoPreviewProps> = ({
   onToggleNoteField,
   userNote,
   onUserNoteChange,
+  mismatchWarning,
+  detectedCropName,
+  detectedCropId,
+  onSwitchCrop,
 }) => {
   return (
     <div className="space-y-4 animate-fade-in">
@@ -43,6 +51,39 @@ export const PhotoPreview: React.FC<PhotoPreviewProps> = ({
           <span>ছবি পরীক্ষার জন্য প্রস্তুত</span>
         </div>
       </div>
+
+      {/* Immediate Client-Side Category Mismatch Warning */}
+      {mismatchWarning && (
+        <div className="p-4 bg-amber-50/95 border-2 border-amber-300 rounded-2xl text-amber-950 font-bengali space-y-2.5 animate-fade-in shadow-xs">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+            <h4 className="text-sm font-black text-amber-900">
+              ক্যাটাগরি ও ছবির অমিল
+            </h4>
+          </div>
+          <p className="text-xs sm:text-sm text-amber-900 leading-relaxed">
+            {mismatchWarning}
+          </p>
+          {detectedCropId && onSwitchCrop && (
+            <div className="pt-1 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => onSwitchCrop(detectedCropId)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold transition-all shadow-xs"
+              >
+                <span>{`ফসল পরিবর্তন করে '${detectedCropName}' করুন`}</span>
+              </button>
+              <button
+                type="button"
+                onClick={onRetake}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-stone-50 text-ink border border-amber-300 text-xs font-bold transition-all"
+              >
+                <span>নতুন ছবি দিন</span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Optional Note (Collapsed by default into a small text button) */}
       <div>

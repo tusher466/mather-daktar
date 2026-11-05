@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       throw new ValidationError(parsed.error.errors.map((e) => e.message).join(", "));
     }
 
-    const { crop, imageBase64, mimeType, note } = parsed.data;
+    const { crop, cropId, fileName, detectedCropHint, isClientMismatch, imageBase64, mimeType, note } = parsed.data;
 
     // Check base64 size (must be under 1.5MB in base64 string length)
     const base64Length = imageBase64.length;
@@ -46,7 +46,12 @@ export async function POST(req: NextRequest) {
       setTimeout(() => reject(new Error("Request timed out after 30 seconds")), 28000)
     );
 
-    const diagnosisPromise = generateDiagnosis(crop, imageBase64, mimeType, note);
+    const diagnosisPromise = generateDiagnosis(crop, imageBase64, mimeType, note, {
+      cropId,
+      fileName,
+      detectedCropHint,
+      isClientMismatch,
+    });
 
     const diagnosis = (await Promise.race([diagnosisPromise, timeoutPromise])) as Awaited<
       ReturnType<typeof generateDiagnosis>

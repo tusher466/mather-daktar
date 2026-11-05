@@ -9,6 +9,11 @@ import { saveDiagnosis } from "@/lib/storage/history";
 import { CROPS, getCropById } from "@/config/crops";
 import { DiagnosisResult } from "@/types";
 import { STRINGS_BN } from "@/lib/strings.bn";
+import {
+  analyzeImagePixelsOnCanvas,
+  checkCropMismatch,
+  ImageCropAnalysis,
+} from "@/lib/image/classify";
 
 export function useDiagnose() {
   const router = useRouter();
@@ -21,6 +26,10 @@ export function useDiagnose() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [compressedBase64, setCompressedBase64] = useState<string | null>(null);
+
+  // Mismatch detection state
+  const [clientMismatchInfo, setClientMismatchInfo] =
+    useState<ImageCropAnalysis | null>(null);
 
   // Optional note
   const [showNoteField, setShowNoteField] = useState<boolean>(false);
@@ -45,6 +54,12 @@ export function useDiagnose() {
   const handleSelectCrop = (cropId: string) => {
     setSelectedCropId(cropId);
     saveCropPreference(cropId);
+
+    // If image is already uploaded, re-evaluate mismatch for the new crop
+    if (imageFile) {
+      const mismatch = checkCropMismatch(cropId, imageFile.name);
+      setClientMismatchInfo(mismatch.isMismatch ? mismatch : null);
+    }
   };
 
   const handleImageSelected = async (file: File) => {
@@ -62,6 +77,33 @@ export function useDiagnose() {
       const objectUrl = URL.createObjectURL(file);
       setImagePreviewUrl(objectUrl);
 
+      // Fast filename mismatch check
+      const initialMismatch = checkCropMismatch(selectedCropId, file.name);
+      if (initialMismatch.isMismatch) {
+        setClientMismatchInfo(initialMismatch);
+      } else {
+        setClientMismatchInfo(null);
+      }
+
+      // Check pixel colors via canvas in background
+      const img = new Image();
+      img.src = objectUrl;
+      img.onload = () => {
+        try {
+          const canvasResult = analyzeImagePixelsOnCanvas(img);
+          const fullMismatch = checkCropMismatch(
+            selectedCropId,
+            file.name,
+            canvasResult
+          );
+          if (fullMismatch.isMismatch) {
+            setClientMismatchInfo(fullMismatch);
+          }
+        } catch (e) {
+          console.warn("Canvas check error:", e);
+        }
+      };
+
       // Compress client side
       const compressed = await compressImageForUpload(file, 1024, 0.8);
       setCompressedBase64(compressed.base64);
@@ -78,6 +120,7 @@ export function useDiagnose() {
     setImageFile(null);
     setImagePreviewUrl(null);
     setCompressedBase64(null);
+    setClientMismatchInfo(null);
     setErrorMessage(null);
   };
 
@@ -108,6 +151,10 @@ export function useDiagnose() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           crop: cropNameBn,
+          cropId: selectedCropId,
+          fileName: imageFile?.name,
+          detectedCropHint: clientMismatchInfo?.detectedCropBn || undefined,
+          isClientMismatch: clientMismatchInfo?.isMismatch || undefined,
           imageBase64: compressedBase64,
           mimeType: "image/jpeg",
           note: userNote.trim() || undefined,
@@ -166,6 +213,7 @@ export function useDiagnose() {
     imageFile,
     imagePreviewUrl,
     compressedBase64,
+    clientMismatchInfo,
     handleImageSelected,
     handleResetPhoto,
     showNoteField,

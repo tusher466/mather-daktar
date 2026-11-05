@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { MapPin, Sparkles, Check, Info, ZoomIn, Compass } from "lucide-react";
+import { MapPin, Sparkles, Check, Info, ZoomIn, Compass, ChevronDown } from "lucide-react";
 
 export interface OriginalMapDivision {
   id: string;
@@ -100,6 +100,11 @@ export const BangladeshVisualMap: React.FC<BangladeshVisualMapProps> = ({
 }) => {
   const [hoveredDivisionId, setHoveredDivisionId] = useState<string | null>(null);
 
+  const activeDivision =
+    ORIGINAL_MAP_DIVISIONS.find(
+      (d) => d.id === (hoveredDivisionId || selectedDivisionId)
+    ) || ORIGINAL_MAP_DIVISIONS[0];
+
   return (
     <div className="w-full flex flex-col items-center select-none">
       {/* Map Card Container matching original cream backdrop */}
@@ -174,6 +179,36 @@ export const BangladeshVisualMap: React.FC<BangladeshVisualMapProps> = ({
               </button>
             );
           })}
+        </div>
+
+        {/* Selected Division Live Status Bar */}
+        <div className="w-full mt-3 p-3 bg-white rounded-2xl border border-stone-200/90 shadow-2xs flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="text-2xl">{activeDivision.cropEmoji}</span>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm font-bold font-bengali text-emerald-950 leading-tight truncate">
+                {activeDivision.nameBn} বিভাগ নির্বাচিত
+              </p>
+              <p className="text-[11px] sm:text-xs font-bengali text-ink-muted truncate">
+                প্রধান ফসল: <strong className="text-emerald-800">{activeDivision.shortCrop}</strong>
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              const el = document.getElementById("division-detail");
+              if (el) {
+                el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }
+            }}
+            title="নিচে বিস্তারিত তথ্য দেখুন"
+            className="flex items-center gap-1 text-xs font-bold font-bengali px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 active:scale-95 text-white rounded-xl shadow-xs transition-all flex-shrink-0 cursor-pointer"
+          >
+            <span>নিচে বিস্তারিত দেখুন</span>
+            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
     </div>

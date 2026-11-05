@@ -23,6 +23,7 @@ export default function DoctorPage() {
     imagePreviewUrl,
     handleImageSelected,
     handleResetPhoto,
+    clientMismatchInfo,
     showNoteField,
     setShowNoteField,
     userNote,
@@ -94,6 +95,10 @@ export default function DoctorPage() {
               onToggleNoteField={() => setShowNoteField(!showNoteField)}
               userNote={userNote}
               onUserNoteChange={setUserNote}
+              mismatchWarning={clientMismatchInfo?.reasonBn}
+              detectedCropName={clientMismatchInfo?.detectedCropBn}
+              detectedCropId={clientMismatchInfo?.detectedCropId}
+              onSwitchCrop={handleSelectCrop}
             />
           )}
         </section>

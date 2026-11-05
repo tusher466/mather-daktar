@@ -10,6 +10,7 @@ import { PhotoPreview } from "@/components/diagnose/PhotoPreview";
 import { LoadingLeaf } from "@/components/diagnose/LoadingLeaf";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { BangladeshCropMap } from "@/components/map/BangladeshCropMap";
+import { CropFirstAidDrawer } from "@/components/home/CropFirstAidDrawer";
 import { useDiagnose } from "@/hooks/useDiagnose";
 import { STRINGS_BN } from "@/lib/strings.bn";
 
@@ -101,6 +102,9 @@ export default function DoctorPage() {
         <section aria-label="বাংলাদেশ কৃষি মানচিত্র" className="pt-2">
           <BangladeshCropMap />
         </section>
+
+        {/* 4. Plant Emergency First-Aid Guide */}
+        <CropFirstAidDrawer />
       </div>
     </PageShell>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   CloudSun,
   Wind,
@@ -86,8 +87,31 @@ export const WeatherSprayWidget: React.FC = () => {
   }, []);
 
   // Interactive Sprayer Drum Calculator state
+  const [mounted, setMounted] = useState<boolean>(false);
+  const [calcMode, setCalcMode] = useState<"farmer" | "gardener">("farmer");
   const [tankSize, setTankSize] = useState<number>(16); // 16 Liters
   const [landDecimal, setLandDecimal] = useState<number>(5); // 5 decimals
+  const [gardenPots, setGardenPots] = useState<number>(10); // 10 pots
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Lock body scroll and register escape key for the popup
+  useEffect(() => {
+    if (showDetail) {
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") setShowDetail(false);
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.body.style.overflow = prevOverflow;
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    }
+  }, [showDetail]);
 
   const fetchLiveWeather = async (div: DivisionCoords, force: boolean = false) => {
     const cached = weatherCache[div.nameBn];
@@ -155,11 +179,16 @@ export const WeatherSprayWidget: React.FC = () => {
   const isHighWind = windSpeed > 15;
   const isGoodToSpray = !isRaining && !isHighWind && temperature < 34;
 
-  // Drum calculations
+  // Farmer Drum calculations
   const totalWaterNeededLiters = Math.max(1, Math.ceil((landDecimal * 10) / 10)) * 10;
   const totalDrums = Math.max(1, Math.ceil(totalWaterNeededLiters / tankSize));
   const neemExtractMl = tankSize * 5; // 5ml organic per liter
   const soapMl = Math.round(tankSize * 1.5);
+
+  // Rooftop Gardener calculations (10 pots ~ 1.5L hand spray bottle)
+  const gardenerLiters = Math.max(0.5, Math.round(gardenPots * 0.15 * 10) / 10);
+  const gardenerNeemMl = Math.max(2, Math.round(gardenerLiters * 5));
+  const gardenerSoapDrops = Math.max(2, Math.round(gardenerLiters * 4));
 
   return (
     <>
@@ -284,21 +313,21 @@ export const WeatherSprayWidget: React.FC = () => {
         </div>
       </div>
 
-      {/* Expanded Spray Guide & Drum Calculator Modal Popup */}
-      {showDetail && (
+      {/* Dedicated Centered Pop-up Modal Portal: Appended directly to body so it CANNOT go down or be constrained */}
+      {mounted && showDetail && createPortal(
         <div
           role="dialog"
           aria-modal="true"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowDetail(false);
           }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
+          className="fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in"
         >
           <div className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-stone-200 space-y-4 max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-stone-200">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center flex-shrink-0">
                   <Calculator className="w-5 h-5" />
                 </div>
                 <div>
@@ -306,109 +335,211 @@ export const WeatherSprayWidget: React.FC = () => {
                     স্মার্ট স্প্রে ড্রাম ক্যালকুলেটর
                   </h3>
                   <p className="text-xs font-bengali text-ink-muted">
-                    জমির মাপ ও ট্যাংকের ধারণক্ষমতা অনুযায়ী সঠিক পানির হিসাব
+                    জমির মাপ বা টব সংখ্যা অনুযায়ী সঠিক পানি ও মিশ্রণের হিসাব
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowDetail(false)}
-                className="w-8 h-8 rounded-full bg-stone-100 text-ink-muted hover:text-ink flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-stone-100 text-ink-muted hover:text-ink hover:bg-stone-200 flex items-center justify-center transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Sprayer Drum Size Selector */}
-            <div className="space-y-1.5">
-              <label className="block text-xs sm:text-sm font-bold font-bengali text-ink">
-                আপনার স্প্রে ট্যাংকের মাপ:
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { size: 10, label: "১০ লিটার" },
-                  { size: 16, label: "১৬ লিটার (স্ট্যান্ডার্ড)" },
-                  { size: 20, label: "২০ লিটার" },
-                ].map((item) => (
-                  <button
-                    key={item.size}
-                    type="button"
-                    onClick={() => setTankSize(item.size)}
-                    className={`py-2 px-2 rounded-xl text-xs sm:text-sm font-bold font-bengali border transition-all ${
-                      tankSize === item.size
-                        ? "bg-emerald-800 text-white border-emerald-800 shadow-xs"
-                        : "bg-white text-ink border-stone-200 hover:bg-stone-50"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
+            {/* Mode Switcher: Farmer Land vs Rooftop Garden */}
+            <div className="grid grid-cols-2 p-1 bg-stone-100 rounded-2xl gap-1 text-xs sm:text-sm font-bold font-bengali">
+              <button
+                type="button"
+                onClick={() => setCalcMode("farmer")}
+                className={`py-2 px-3 rounded-xl transition-all ${
+                  calcMode === "farmer"
+                    ? "bg-white text-emerald-900 shadow-2xs font-extrabold"
+                    : "text-ink-muted hover:text-ink"
+                }`}
+              >
+                🌾 মাঠের ফসল (শতাংশ/বিঘা)
+              </button>
+              <button
+                type="button"
+                onClick={() => setCalcMode("gardener")}
+                className={`py-2 px-3 rounded-xl transition-all ${
+                  calcMode === "gardener"
+                    ? "bg-white text-emerald-900 shadow-2xs font-extrabold"
+                    : "text-ink-muted hover:text-ink"
+                }`}
+              >
+                🪴 ছাদবাগান (টব/হ্যান্ড স্প্রে)
+              </button>
             </div>
 
-            {/* Land Area Selector */}
-            <div className="space-y-1.5">
-              <label className="block text-xs sm:text-sm font-bold font-bengali text-ink">
-                জমির পরিমাণ (শতাংশ):
-              </label>
-              <div className="grid grid-cols-4 gap-1.5">
-                {[
-                  { area: 1, label: "১ শতক" },
-                  { area: 3, label: "৩ শতক" },
-                  { area: 5, label: "৫ শতক" },
-                  { area: 10, label: "১০ শতক" },
-                  { area: 20, label: "২০ শতক" },
-                  { area: 33, label: "১ বিঘা (৩৩ শতক)" },
-                  { area: 50, label: "৫০ শতক" },
-                  { area: 100, label: "১ একর" },
-                ].map((item) => (
-                  <button
-                    key={item.area}
-                    type="button"
-                    onClick={() => setLandDecimal(item.area)}
-                    className={`py-1.5 px-1 rounded-xl text-xs font-bold font-bengali border transition-all ${
-                      landDecimal === item.area
-                        ? "bg-emerald-800 text-white border-emerald-800 shadow-xs"
-                        : "bg-white text-ink border-stone-200 hover:bg-stone-50"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Real Calculations Result Box */}
-            <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-2.5">
-              <h4 className="text-xs font-bold font-bengali text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-emerald-700" />
-                <span>প্রয়োজনীয় পানির সঠিক অনুপাত:</span>
-              </h4>
-
-              <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm font-bengali">
-                <div className="p-2.5 bg-white rounded-xl border border-emerald-100">
-                  <p className="text-ink-muted">মোট স্প্রে ড্রাম লাগবে:</p>
-                  <p className="text-base sm:text-lg font-bold text-emerald-950">
-                    প্রায় {toBanglaDigits(totalDrums)} ড্রাম
-                  </p>
+            {calcMode === "farmer" ? (
+              <>
+                {/* Sprayer Drum Size Selector */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs sm:text-sm font-bold font-bengali text-ink">
+                    আপনার স্প্রে ট্যাংকের মাপ:
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { size: 10, label: "১০ লিটার" },
+                      { size: 16, label: "১৬ লিটার (স্ট্যান্ডার্ড)" },
+                      { size: 20, label: "২০ লিটার" },
+                    ].map((item) => (
+                      <button
+                        key={item.size}
+                        type="button"
+                        onClick={() => setTankSize(item.size)}
+                        className={`py-2 px-2 rounded-xl text-xs sm:text-sm font-bold font-bengali border transition-all ${
+                          tankSize === item.size
+                            ? "bg-emerald-800 text-white border-emerald-800 shadow-xs"
+                            : "bg-white text-ink border-stone-200 hover:bg-stone-50"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="p-2.5 bg-white rounded-xl border border-emerald-100">
-                  <p className="text-ink-muted">প্রয়োজনীয় পানি:</p>
-                  <p className="text-base sm:text-lg font-bold text-emerald-950">
-                    {toBanglaDigits(totalDrums * tankSize)} লিটার
-                  </p>
-                </div>
-              </div>
 
-              {/* Organic Mixture Tip */}
-              <div className="p-2.5 bg-white/90 rounded-xl border border-emerald-100 text-xs font-bengali text-ink-muted space-y-1">
-                <p>
-                  <strong className="text-emerald-900">🌿 ঘরোয়া নিমতেল ফর্মুলা:</strong> প্রতি ট্যাংকে ({toBanglaDigits(tankSize)} লিটার) প্রায়{" "}
-                  <strong className="text-ink">{toBanglaDigits(neemExtractMl)} মিলি</strong> নিম তেল এবং{" "}
-                  <strong className="text-ink">{toBanglaDigits(soapMl)} মিলি</strong> তরল সাবান গুলে স্প্রে করুন।
-                </p>
-              </div>
-            </div>
+                {/* Land Area Selector */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs sm:text-sm font-bold font-bengali text-ink">
+                    জমির পরিমাণ (শতক / বিঘা):
+                  </label>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {[
+                      { area: 1, label: "১ শতক" },
+                      { area: 3, label: "৩ শতক" },
+                      { area: 5, label: "৫ শতক" },
+                      { area: 10, label: "১০ শতক" },
+                      { area: 20, label: "২০ শতক" },
+                      { area: 33, label: "১ বিঘা (৩৩ শতক)" },
+                      { area: 50, label: "৫০ শতক" },
+                      { area: 100, label: "১ একর" },
+                    ].map((item) => (
+                      <button
+                        key={item.area}
+                        type="button"
+                        onClick={() => setLandDecimal(item.area)}
+                        className={`py-1.5 px-1 rounded-xl text-xs font-bold font-bengali border transition-all ${
+                          landDecimal === item.area
+                            ? "bg-emerald-800 text-white border-emerald-800 shadow-xs"
+                            : "bg-white text-ink border-stone-200 hover:bg-stone-50"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Real Calculations Result Box for Field */}
+                <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-2.5">
+                  <h4 className="text-xs font-bold font-bengali text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-emerald-700" />
+                    <span>প্রয়োজনীয় পানির সঠিক অনুপাত:</span>
+                  </h4>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm font-bengali">
+                    <div className="p-2.5 bg-white rounded-xl border border-emerald-100">
+                      <p className="text-ink-muted">মোট স্প্রে ড্রাম লাগবে:</p>
+                      <p className="text-base sm:text-lg font-bold text-emerald-950">
+                        প্রায় {toBanglaDigits(totalDrums)} ড্রাম
+                      </p>
+                    </div>
+                    <div className="p-2.5 bg-white rounded-xl border border-emerald-100">
+                      <p className="text-ink-muted">প্রয়োজনীয় পানি:</p>
+                      <p className="text-base sm:text-lg font-bold text-emerald-950">
+                        {toBanglaDigits(totalDrums * tankSize)} লিটার
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Organic Mixture Tip */}
+                  <div className="p-2.5 bg-white/90 rounded-xl border border-emerald-100 text-xs font-bengali text-ink-muted space-y-1">
+                    <p>
+                      <strong className="text-emerald-900">🌿 ঘরোয়া নিমতেল ফর্মুলা:</strong> প্রতি ট্যাংকে ({toBanglaDigits(tankSize)} লিটার) প্রায়{" "}
+                      <strong className="text-ink">{toBanglaDigits(neemExtractMl)} মিলি</strong> নিম তেল এবং{" "}
+                      <strong className="text-ink">{toBanglaDigits(soapMl)} মিলি</strong> তরল সাবান গুলে স্প্রে করুন।
+                    </p>
+                  </div>
+                </div>
+
+                {/* Conversion quick note */}
+                <div className="p-2.5 bg-stone-50 rounded-xl border border-stone-200 text-[11px] font-bengali text-ink-muted flex items-center justify-between">
+                  <span>📐 ১ বিঘা = ৩৩ শতক</span>
+                  <span>• ১ কাঠা = ১.৬৫ শতক</span>
+                  <span>• ১ একর = ১০০ শতক</span>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Rooftop Garden Pots Selector */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs sm:text-sm font-bold font-bengali text-ink">
+                    আপনার ছাদবাগানের টব সংখ্যা:
+                  </label>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {[
+                      { pots: 3, label: "৩টি টব" },
+                      { pots: 5, label: "৫টি টব" },
+                      { pots: 10, label: "১০টি টব" },
+                      { pots: 20, label: "২০টি টব" },
+                      { pots: 30, label: "৩০টি টব" },
+                      { pots: 50, label: "৫০টি টব" },
+                      { pots: 75, label: "৭৫টি টব" },
+                      { pots: 100, label: "১০০টি টব" },
+                    ].map((item) => (
+                      <button
+                        key={item.pots}
+                        type="button"
+                        onClick={() => setGardenPots(item.pots)}
+                        className={`py-1.5 px-1 rounded-xl text-xs font-bold font-bengali border transition-all ${
+                          gardenPots === item.pots
+                            ? "bg-emerald-800 text-white border-emerald-800 shadow-xs"
+                            : "bg-white text-ink border-stone-200 hover:bg-stone-50"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Real Calculations Result Box for Rooftop */}
+                <div className="p-4 bg-teal-50 rounded-2xl border border-teal-200 space-y-2.5">
+                  <h4 className="text-xs font-bold font-bengali text-teal-950 uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-teal-700" />
+                    <span>হ্যান্ড স্প্রেয়ার বোতলের সঠিক পরিমাপ:</span>
+                  </h4>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm font-bengali">
+                    <div className="p-2.5 bg-white rounded-xl border border-teal-100">
+                      <p className="text-ink-muted">প্রয়োজনীয় পানি:</p>
+                      <p className="text-base sm:text-lg font-bold text-teal-950">
+                        {toBanglaDigits(gardenerLiters)} লিটার
+                      </p>
+                    </div>
+                    <div className="p-2.5 bg-white rounded-xl border border-teal-100">
+                      <p className="text-ink-muted">ঘরোয়া খাঁটি নিম তেল:</p>
+                      <p className="text-base sm:text-lg font-bold text-teal-950">
+                        {toBanglaDigits(gardenerNeemMl)} মিলি (১ চা চামচ)
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Organic Mixture Tip */}
+                  <div className="p-2.5 bg-white/90 rounded-xl border border-teal-100 text-xs font-bengali text-ink-muted space-y-1">
+                    <p>
+                      <strong className="text-teal-900">🪴 ছাদবাগান স্প্রে টিপস:</strong> {toBanglaDigits(gardenerLiters)} লিটার পানিতে {toBanglaDigits(gardenerNeemMl)} মিলি নিম তেল এবং{" "}
+                      <strong className="text-ink">{toBanglaDigits(gardenerSoapDrops)} ফোটা লিকুইড সাবান</strong> মিশিয়ে স্প্রে বোতল ভালোভাবে ঝাঁকিয়ে বিকেলের পর স্প্রে করুন।
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Golden Rules for Spraying */}
             <div className="p-3 bg-stone-50 rounded-2xl border border-stone-200 text-xs font-bengali text-ink-muted space-y-1.5">
@@ -431,7 +562,8 @@ export const WeatherSprayWidget: React.FC = () => {
               বন্ধ করুন
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

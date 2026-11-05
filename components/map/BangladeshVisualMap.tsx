@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { MapPin, Sparkles, Check, Info, ZoomIn, Compass } from "lucide-react";
+import { MapPin, Sparkles, Check, Info, ZoomIn, Compass, ChevronDown } from "lucide-react";
 
 export interface OriginalMapDivision {
   id: string;
@@ -194,9 +194,20 @@ export const BangladeshVisualMap: React.FC<BangladeshVisualMapProps> = ({
             </div>
           </div>
 
-          <span className="text-2xs font-bold font-bengali px-2.5 py-1 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-200 whitespace-nowrap flex-shrink-0">
-            নিচে বিস্তারিত দেখুন
-          </span>
+          <button
+            type="button"
+            onClick={() => {
+              const el = document.getElementById("division-detail");
+              if (el) {
+                el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }
+            }}
+            title="নিচে বিস্তারিত তথ্য দেখুন"
+            className="flex items-center gap-1 text-xs font-bold font-bengali px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white rounded-xl shadow-xs transition-all flex-shrink-0 cursor-pointer"
+          >
+            <span>নিচে বিস্তারিত দেখুন</span>
+            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
     </div>

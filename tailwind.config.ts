@@ -10,31 +10,31 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#1F6B3A",
-          dark: "#154D2A",
+          DEFAULT: "#0F5132",
+          dark: "#073B22",
           light: "#E8F5E9",
         },
         harvest: {
-          DEFAULT: "#C9892B",
-          light: "#FFF4DC",
-          border: "#EAD4AA",
+          DEFAULT: "#D97706",
+          light: "#FFFBEB",
+          border: "#FDE68A",
         },
         ground: {
-          DEFAULT: "#F6F3EA",
+          DEFAULT: "#F4F7F4",
           surface: "#FFFFFF",
-          border: "#E3DDCB",
+          border: "#E2E8F0",
         },
         ink: {
-          DEFAULT: "#1A1A1A",
-          muted: "#4D4D45",
+          DEFAULT: "#0F172A",
+          muted: "#475569",
         },
         danger: {
-          DEFAULT: "#B3261E",
-          light: "#FDE8E8",
+          DEFAULT: "#DC2626",
+          light: "#FEF2F2",
         },
         success: {
-          DEFAULT: "#2E7D32",
-          light: "#E8F5E9",
+          DEFAULT: "#16A34A",
+          light: "#ECFDF5",
         },
       },
       fontFamily: {

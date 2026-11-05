@@ -17,7 +17,12 @@ export const metadata: Metadata = {
     "বাংলাদেশের কৃষক ও ছাদবাগানীদের জন্য সহজ বাংলায় কৃত্রিম বুদ্ধিমত্তাভিত্তিক উদ্ভিদ ও শস্য রোগ নির্ণয় সেবা।",
   manifest: "/manifest.json",
   icons: {
-    icon: "/icon-192.png",
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-64.png", sizes: "64x64", type: "image/png" },
+    ],
+    shortcut: "/icon.svg",
     apple: "/icon-192.png",
   },
 };

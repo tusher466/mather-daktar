@@ -35,9 +35,14 @@ export const Navbar: React.FC = () => {
             prefetch={true}
             className="flex items-center gap-2 focus:outline-none rounded-xl py-1 select-none"
           >
-            <span className="text-2xl sm:text-3xl" role="img" aria-label="পাতা">
-              🌿
-            </span>
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-100/90 flex items-center justify-center p-1 border border-emerald-300 shadow-2xs flex-shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/icon.svg"
+                alt="মাঠের ডাক্তার লোগো"
+                className="w-full h-full object-contain"
+              />
+            </div>
             <div className="flex flex-col">
               <span className="text-xl sm:text-2xl font-black font-bengali text-emerald-950 tracking-tight whitespace-nowrap leading-tight">
                 {STRINGS_BN.appName}

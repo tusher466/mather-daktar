@@ -70,6 +70,21 @@ export const WeatherSprayWidget: React.FC = () => {
   const [showDetail, setShowDetail] = useState<boolean>(false);
   const [lastUpdatedTime, setLastUpdatedTime] = useState<string>(initialCache?.lastUpdatedTime ?? "");
 
+  // Real-time dynamic live clock updating every 10 seconds
+  const [liveCurrentTime, setLiveCurrentTime] = useState<string>("");
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, "0");
+      const mins = now.getMinutes().toString().padStart(2, "0");
+      setLiveCurrentTime(`${toBanglaDigits(hours)}:${toBanglaDigits(mins)}`);
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 10000);
+    return () => clearInterval(timer);
+  }, []);
+
   // Interactive Sprayer Drum Calculator state
   const [tankSize, setTankSize] = useState<number>(16); // 16 Liters
   const [landDecimal, setLandDecimal] = useState<number>(5); // 5 decimals
@@ -160,9 +175,9 @@ export const WeatherSprayWidget: React.FC = () => {
                 <span className="text-base sm:text-lg font-bold font-bengali text-emerald-950">
                   স্মার্ট স্প্রে পরামর্শ ও লাইভ আবহাওয়া
                 </span>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold font-bengali">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                  <span>লাইভ {lastUpdatedTime && `(${lastUpdatedTime})`}</span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 text-[11px] font-bold font-bengali shadow-2xs">
+                  <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+                  <span>লাইভ ({liveCurrentTime || lastUpdatedTime || "এখন"})</span>
                 </span>
               </div>
 
@@ -269,12 +284,15 @@ export const WeatherSprayWidget: React.FC = () => {
         </div>
       </div>
 
-      {/* Expanded Spray Guide & Drum Calculator Modal */}
+      {/* Expanded Spray Guide & Drum Calculator Modal Popup */}
       {showDetail && (
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowDetail(false);
+          }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
         >
           <div className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-stone-200 space-y-4 max-h-[90vh] overflow-y-auto">
             {/* Header */}

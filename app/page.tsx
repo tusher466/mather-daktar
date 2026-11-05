@@ -4,7 +4,6 @@ import React from "react";
 import { PageShell } from "@/components/layout/PageShell";
 import { HeroIllustration } from "@/components/home/HeroIllustration";
 import { WeatherSprayWidget } from "@/components/home/WeatherSprayWidget";
-import { DosageCalculatorModal } from "@/components/home/DosageCalculatorModal";
 import { CropGrid } from "@/components/diagnose/CropGrid";
 import { PhotoPicker } from "@/components/diagnose/PhotoPicker";
 import { PhotoPreview } from "@/components/diagnose/PhotoPreview";
@@ -43,11 +42,8 @@ export default function DoctorPage() {
         {/* Modern Graphic Hero Banner */}
         <HeroIllustration />
 
-        {/* Live Weather & Smart Spray Suitability Widget */}
+        {/* Live Weather & Smart Spray Suitability Widget with Popup Calculator */}
         <WeatherSprayWidget />
-
-        {/* Smart Drum & Water Dosage Calculator Feature */}
-        <DosageCalculatorModal />
 
         {/* Error Message if any */}
         {errorMessage && (

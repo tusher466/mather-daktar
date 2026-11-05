@@ -563,7 +563,10 @@ export const BangladeshCropMap: React.FC = () => {
                 </div>
 
                 {/* Active Division Card */}
-                <div className="bg-stone-50/90 rounded-2xl p-4 sm:p-5 border border-emerald-100/90 space-y-4 shadow-2xs">
+                <div
+                  id="division-detail"
+                  className="bg-stone-50/90 rounded-2xl p-4 sm:p-5 border border-emerald-100/90 space-y-4 shadow-2xs scroll-mt-24"
+                >
                   {/* Clean, spacious header with zero overlap */}
                   <div className="flex flex-col gap-2 pb-3 border-b border-ground-border">
                     <div className="flex items-center gap-2 flex-wrap">

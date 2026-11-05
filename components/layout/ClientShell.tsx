@@ -3,6 +3,7 @@
 import React from "react";
 import { Navbar } from "./Navbar";
 import { BottomTabs } from "./BottomTabs";
+import { Footer } from "./Footer";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { WifiOff } from "lucide-react";
 import { STRINGS_BN } from "@/lib/strings.bn";
@@ -24,9 +25,12 @@ export const ClientShell: React.FC<{ children: React.ReactNode }> = ({ children 
       )}
 
       {/* Main Responsive Content Area */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-3 sm:px-6 md:px-8 pt-3 pb-24 md:pb-12">
+      <main className="flex-1 w-full max-w-5xl mx-auto px-3 sm:px-6 md:px-8 pt-3 pb-6">
         {children}
       </main>
+
+      {/* Professional Agriculture Footer */}
+      <Footer />
 
       {/* Persistent Bottom Tabs for mobile: NEVER unmounts, hides smoothly on /result/[id] */}
       <BottomTabs />

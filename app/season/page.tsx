@@ -27,7 +27,7 @@ export default function SeasonPage() {
 
   const getStorageKey = useCallback(
     (cropId: string, month: string) => {
-      return `mather_daktar_season_${cropId}_${month}`;
+      return `mather_daktar_season_v2_${cropId}_${month}`;
     },
     []
   );
@@ -137,9 +137,14 @@ export default function SeasonPage() {
 
         {/* Crop Selector Horizontal Tabs */}
         <div>
-          <label className="block text-xs font-bold font-bengali text-ink-muted uppercase tracking-wider mb-2 px-1">
-            ফসল নির্বাচন করুন:
-          </label>
+          <div className="flex items-center justify-between mb-2 px-1">
+            <label className="text-xs font-bold font-bengali text-ink-muted uppercase tracking-wider">
+              ফসল নির্বাচন করুন (আলাদা আলাদা পরামর্শ দেখুন):
+            </label>
+            <span className="text-2xs font-bengali text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              ১২টি ফসল
+            </span>
+          </div>
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none no-scrollbar">
             {CROPS.map((crop) => {
               const isSelected = crop.id === selectedCropId;
@@ -148,13 +153,22 @@ export default function SeasonPage() {
                   key={crop.id}
                   type="button"
                   onClick={() => handleSelectCrop(crop.id)}
-                  className={`px-4 py-2.5 rounded-2xl text-base font-bengali whitespace-nowrap transition-all select-none border min-h-[46px] active:scale-95 ${
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-sm sm:text-base font-bengali whitespace-nowrap transition-all select-none border min-h-[46px] active:scale-95 ${
                     isSelected
-                      ? "bg-gradient-to-r from-emerald-700 to-emerald-800 text-white border-emerald-600 font-bold shadow-md shadow-emerald-950/20"
-                      : "bg-white text-ink border-ground-border hover:bg-stone-50 shadow-2xs"
+                      ? "bg-emerald-800 text-white border-emerald-800 font-bold shadow-md shadow-emerald-950/20 ring-2 ring-emerald-500/30"
+                      : "bg-white text-ink border-stone-200 hover:bg-stone-50 shadow-2xs"
                   }`}
                 >
-                  {crop.nameBn}
+                  <div className="w-6 h-6 rounded-lg overflow-hidden flex-shrink-0 bg-stone-100 border border-black/10">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={crop.imageUrl}
+                      alt={crop.nameBn}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                  <span>{crop.nameBn}</span>
                 </button>
               );
             })}

@@ -523,6 +523,24 @@ export async function generateChat(
   return getDynamicAgriculturalAnswer(lastUserMsg, diagnosisContext);
 }
 
+import { CROP_SPECIFIC_SEASONAL_DATABASE } from "./crops-seasonal";
+
+function resolveCropSeasonalKey(cropName: string): string {
+  const norm = cropName.toLowerCase().trim();
+  if (norm.includes("ধান") || norm.includes("rice") || norm.includes("paddy")) return "rice";
+  if (norm.includes("আলু") || norm.includes("potato")) return "potato";
+  if (norm.includes("টমেটো") || norm.includes("tomato")) return "tomato";
+  if (norm.includes("বেগুন") || norm.includes("eggplant") || norm.includes("brinjal")) return "eggplant";
+  if (norm.includes("মরিচ") || norm.includes("chili") || norm.includes("pepper")) return "chili";
+  if (norm.includes("পাট") || norm.includes("jute")) return "jute";
+  if (norm.includes("ভুট্টা") || norm.includes("maize") || norm.includes("corn")) return "maize";
+  if (norm.includes("সরিষা") || norm.includes("mustard")) return "mustard";
+  if (norm.includes("পেঁয়াজ") || norm.includes("onion")) return "onion";
+  if (norm.includes("বাঁধাকপি") || norm.includes("ফুলকপি") || norm.includes("cabbage")) return "cabbage";
+  if (norm.includes("লাউ") || norm.includes("কুমড়া") || norm.includes("gourd")) return "gourd";
+  return "other";
+}
+
 // -------------------------------------------------------------
 // 3. SEASON ADVISORY
 // -------------------------------------------------------------
@@ -533,42 +551,18 @@ export async function generateSeason(
 ): Promise<RawSeasonResponse> {
   const apiKey = getApiKey();
   const provider = getProvider();
+  const cropKey = resolveCropSeasonalKey(crop);
+  const defaultSeasonal = CROP_SPECIFIC_SEASONAL_DATABASE[cropKey] || CROP_SPECIFIC_SEASONAL_DATABASE.other;
 
-  // If no API key configured, provide seasonal advisory based on Bangladesh crop calendar
+  // If no API key configured, provide rich crop-specific seasonal advisory
   if (!apiKey) {
     return {
       crop,
       cropBn: crop,
       banglaMonth,
-      seasonNameBn: "রবি মৌসুম (শীতকালীন)",
-      risks: [
-        {
-          titleBn: "ঘন কুয়াশা ও ধসা রোগের ঝুঁকি",
-          descBn: "শীতকালীন স্যাঁতসেঁতে আবহাওয়ায় পাতায় ছত্রাকের আক্রমণ দ্রুত বাড়ে।"
-        },
-        {
-          titleBn: "মাটির আর্দ্রতা কমে যাওয়া",
-          descBn: "শীতকালে বৃষ্টির অভাব হওয়ায় নিয়মিত হালকা সেচ প্রয়োজন।"
-        },
-        {
-          titleBn: "কচি পাতায় জাবপোকা বা মাকড়ের আক্রমণ",
-          descBn: "শুষ্ক আবহাওয়ায় পোকার উপদ্রব বেড়ে কচি পাতা কুঁকড়ে যেতে পারে।"
-        }
-      ],
-      tasks: [
-        {
-          titleBn: "সকালে পাতায় জমে থাকা কুয়াশার পানি ঝেড়ে দেওয়া",
-          descBn: "গাছের পাতা দ্রুত শুকিয়ে গেলে ছত্রাকের বিস্তার রোধ হয়।"
-        },
-        {
-          titleBn: "গাছের গোড়ায় হালকা সেচ ও নিড়ানি দেওয়া",
-          descBn: "মাটিতে বাতাস চলাচল স্বাভাবিক রাখতে আগাছা পরিষ্কার রাখুন।"
-        },
-        {
-          titleBn: "হলুদ আঠালো ফাঁদ ও ছাই ব্যবহার",
-          descBn: "জৈব উপায়ে পোকা দমন করতে কাঠের ছাই বা নিমতেল স্প্রে করুন।"
-        }
-      ]
+      seasonNameBn: defaultSeasonal.seasonNameBn,
+      risks: defaultSeasonal.risks,
+      tasks: defaultSeasonal.tasks,
     };
   }
 
@@ -577,7 +571,7 @@ export async function generateSeason(
 বাংলা মাস: ${banglaMonth}
 ${gregorianMonth ? `ইংরেজি মাস: ${gregorianMonth}` : ""}
 
-এই ফসলের জন্য এই নির্দিষ্ট মাসে বাংলাদেশের বাস্তব আবহাওয়ায় সবচেয়ে গুরুত্বপূর্ণ ৩টি সম্ভাব্য ঝুঁকি (risks) এবং ৩টি প্রধান করণীয় কাজ (tasks) প্রস্তুত করে JSON আকারে দাও।
+এই নির্দিষ্ট "${crop}" ফসলের জন্য বাংলাদেশের বাস্তব কৃষি আবহাওয়া ও ঋতু অনুযায়ী অত্যন্ত প্রাসঙ্গিক ৩টি সুনির্দিষ্ট ঝুঁকি (risks) এবং ৩টি কার্যকর করণীয় কাজ (tasks) প্রস্তুত করে JSON আকারে দাও। কোনো সাধারণ বা পুনরাবৃত্তিমূলক তথ্য দেবে না, অবশ্যই "${crop}" ফসলের সুনির্দিষ্ট রোগ, পোকা এবং চাষাবাদ সংক্রান্ত হতে হবে।
 `.trim();
 
   try {
@@ -594,47 +588,27 @@ ${gregorianMonth ? `ইংরেজি মাস: ${gregorianMonth}` : ""}
       return parseAndValidate(rawOutput, SeasonSchema);
     }
 
-    return await callGeminiWithFallback(
+    const aiResult = await callGeminiWithFallback(
       apiKey,
       SEASON_SYSTEM_PROMPT,
       [{ text: prompt }],
       (rawText) => parseAndValidate(rawText, SeasonSchema)
     );
+
+    if (aiResult && aiResult.risks && aiResult.risks.length > 0) {
+      return aiResult;
+    }
   } catch (e) {
-    console.warn("[Season] Remote AI call failed, falling back to local seasonal advisory:", e);
-    return {
-      crop,
-      cropBn: crop,
-      banglaMonth,
-      seasonNameBn: "চলতি কৃষি মৌসুম",
-      risks: [
-        {
-          titleBn: "আবহাওয়াজনিত ছত্রাক সংক্রমণ",
-          descBn: "অতিরিক্ত আর্দ্রতা বা কুয়াশায় পাতায় দাগের সৃষ্টি হতে পারে।"
-        },
-        {
-          titleBn: "পানির অভাব বা জলাবদ্ধতা",
-          descBn: "জমির সঠিক নিষ্কাশন না থাকলে শিকড় পচে যাওয়ার ঝুঁকি থাকে।"
-        },
-        {
-          titleBn: "রসচোষা পোকার আক্রমণ",
-          descBn: "কচি পাতার রস খেয়ে গাছের স্বাভাবিক বৃদ্ধি আটকে দিতে পারে।"
-        }
-      ],
-      tasks: [
-        {
-          titleBn: "সুষম সার ও হালকা সেচ নিশ্চিত করা",
-          descBn: "মাটির আর্দ্রতা বজায় রেখে গাছের শক্তি বৃদ্ধি করুন।"
-        },
-        {
-          titleBn: "আক্রান্ত পাতা অপসারণ ও পরিষ্কার রাখা",
-          descBn: "জমির আশপাশের আগাছা পরিষ্কার রাখলে পোকার বিস্তার কমে।"
-        },
-        {
-          titleBn: "নিয়মিত জমি পর্যবেক্ষণ ও জৈব বালাই দমন",
-          descBn: "আক্রমণের প্রাথমিক অবস্থায় নিম তেল বা ছাই ব্যবহার করুন।"
-        }
-      ]
-    };
+    console.warn(`[Season] AI call failed for ${crop}, using tailored agricultural database:`, e);
   }
+
+  // Graceful authentic crop-specific advisory fallback
+  return {
+    crop,
+    cropBn: crop,
+    banglaMonth,
+    seasonNameBn: defaultSeasonal.seasonNameBn,
+    risks: defaultSeasonal.risks,
+    tasks: defaultSeasonal.tasks,
+  };
 }

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { CROPS, CropConfig } from "@/config/crops";
-import { Check, Sprout } from "lucide-react";
+import { Check, Sprout, Sparkles } from "lucide-react";
 import { STRINGS_BN } from "@/lib/strings.bn";
 
 interface CropGridProps {
@@ -21,9 +21,9 @@ export const CropGrid: React.FC<CropGridProps> = ({
   const [imageErrorMap, setImageErrorMap] = useState<Record<string, boolean>>({});
 
   return (
-    <div className="space-y-3.5">
+    <div className="space-y-4">
       {/* Responsive Grid: 3 cols on mobile, 4 cols on tablet, 6 cols on desktop website */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5 sm:gap-3.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
         {CROPS.map((crop: CropConfig) => {
           const isSelected = crop.id === selectedCropId;
           const hasImgError = imageErrorMap[crop.id];
@@ -33,27 +33,22 @@ export const CropGrid: React.FC<CropGridProps> = ({
               key={crop.id}
               type="button"
               onClick={() => onSelectCrop(crop.id)}
-              className={`group relative flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl border transition-all duration-200 min-h-[105px] active:scale-95 select-none focus:outline-none ${
+              className={`group relative flex flex-col p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl border transition-all duration-200 active:scale-95 select-none focus:outline-none text-left overflow-hidden ${
                 isSelected
-                  ? "bg-gradient-to-br from-[#1C6837] via-[#16552C] to-[#0E3D1E] text-white border-emerald-500 shadow-md shadow-emerald-950/25 ring-2 ring-emerald-400/50 scale-[1.02]"
-                  : "bg-white text-ink border-ground-border/90 hover:border-emerald-600/40 hover:bg-stone-50 hover:shadow-xs"
+                  ? "bg-white text-emerald-950 border-emerald-600 shadow-md ring-2 ring-emerald-500/50 scale-[1.02]"
+                  : "bg-white text-ink border-stone-200/90 hover:border-emerald-500/50 hover:shadow-sm hover:bg-stone-50/50"
               }`}
             >
               {/* Selected check pill */}
               {isSelected && (
-                <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-white text-emerald-800 flex items-center justify-center shadow-xs animate-fade-in z-10">
-                  <Check className="w-2.5 h-2.5 stroke-[3.5]" />
-                </span>
+                <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-emerald-800 text-white px-2 py-0.5 rounded-full text-[10px] font-bold font-bengali shadow-md animate-fade-in">
+                  <Check className="w-3 h-3 stroke-[3]" />
+                  <span className="hidden sm:inline">নির্বাচিত</span>
+                </div>
               )}
 
-              {/* Real Original Crop Photo */}
-              <div
-                className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden mb-1.5 border transition-transform duration-200 ${
-                  isSelected
-                    ? "border-white/50 shadow-sm scale-105"
-                    : "border-stone-200/80 group-hover:scale-105"
-                } bg-stone-100 flex items-center justify-center flex-shrink-0`}
-              >
+              {/* Real Authentic Original Crop Photo with Zoom on Hover */}
+              <div className="relative w-full h-24 sm:h-28 rounded-xl sm:rounded-2xl overflow-hidden bg-stone-100 mb-2 border border-black/5 flex items-center justify-center flex-shrink-0">
                 {!hasImgError && crop.imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -61,22 +56,28 @@ export const CropGrid: React.FC<CropGridProps> = ({
                     alt={crop.nameBn}
                     loading="lazy"
                     decoding="async"
-                    width={56}
-                    height={56}
-                    className="w-full h-full object-cover select-none"
+                    className="w-full h-full object-cover select-none transition-transform duration-300 group-hover:scale-105"
                     onError={() =>
                       setImageErrorMap((prev) => ({ ...prev, [crop.id]: true }))
                     }
                   />
                 ) : (
-                  <Sprout className={`w-6 h-6 ${isSelected ? "text-white" : "text-primary"}`} />
+                  <Sprout className={`w-8 h-8 ${isSelected ? "text-emerald-700" : "text-stone-400"}`} />
                 )}
+
+                {/* Subtle soft gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-60 pointer-events-none" />
               </div>
 
-              {/* Bangla Crop Name */}
-              <span className="text-sm sm:text-base font-bengali text-center leading-tight font-bold line-clamp-1">
-                {crop.nameBn}
-              </span>
+              {/* Bangla Crop Name & English Tag */}
+              <div className="px-1 pb-1">
+                <span className="text-sm sm:text-base font-bold font-bengali leading-snug line-clamp-1 block text-ink">
+                  {crop.nameBn}
+                </span>
+                <span className="text-[10px] sm:text-xs text-ink-muted/80 truncate block mt-0.5">
+                  {crop.nameEn}
+                </span>
+              </div>
             </button>
           );
         })}
@@ -84,16 +85,16 @@ export const CropGrid: React.FC<CropGridProps> = ({
 
       {/* When "অন্য ফসল" is chosen, show a modern text field */}
       {selectedCropId === "other" && (
-        <div className="pt-2 animate-fade-in">
-          <label className="block text-sm sm:text-base font-bold font-bengali text-ink mb-1.5">
-            ফসলের নাম লিখুন:
+        <div className="p-4 bg-emerald-50/80 border border-emerald-200 rounded-2xl animate-fade-in space-y-2">
+          <label className="block text-sm font-bold font-bengali text-emerald-950">
+            আপনার ফসলের নাম বাংলায় লিখুন:
           </label>
           <input
             type="text"
             value={customCropName}
             onChange={(e) => onCustomCropNameChange(e.target.value)}
-            placeholder={STRINGS_BN.diagnose.otherCropPlaceholder}
-            className="w-full min-h-[56px] px-4 rounded-2xl border border-ground-border bg-white text-base sm:text-lg font-bengali text-ink placeholder:text-ink-muted/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent shadow-xs transition-all"
+            placeholder="যেমন: আম, লিচু, কমলা, লেবু, গম বা ড্রাগন ফল..."
+            className="w-full min-h-[50px] px-4 rounded-xl border border-emerald-300 bg-white text-base font-bengali text-ink placeholder:text-ink-muted/60 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent shadow-xs transition-all"
           />
         </div>
       )}

@@ -1,7 +1,21 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { CloudSun, Wind, Droplets, CheckCircle2, AlertTriangle, RefreshCw, ChevronRight, X, MapPin } from "lucide-react";
+import {
+  CloudSun,
+  Wind,
+  Droplets,
+  CheckCircle2,
+  AlertTriangle,
+  RefreshCw,
+  ChevronRight,
+  X,
+  MapPin,
+  Calculator,
+  ShieldCheck,
+  Sparkles,
+  Info,
+} from "lucide-react";
 import { toBanglaDigits } from "@/lib/bangla/digits";
 
 interface DivisionCoords {
@@ -55,6 +69,10 @@ export const WeatherSprayWidget: React.FC = () => {
   const [isLiveLoading, setIsLiveLoading] = useState<boolean>(!initialCache);
   const [showDetail, setShowDetail] = useState<boolean>(false);
   const [lastUpdatedTime, setLastUpdatedTime] = useState<string>(initialCache?.lastUpdatedTime ?? "");
+
+  // Interactive Sprayer Drum Calculator state
+  const [tankSize, setTankSize] = useState<number>(16); // 16 Liters
+  const [landDecimal, setLandDecimal] = useState<number>(5); // 5 decimals
 
   const fetchLiveWeather = async (div: DivisionCoords, force: boolean = false) => {
     const cached = weatherCache[div.nameBn];
@@ -122,33 +140,40 @@ export const WeatherSprayWidget: React.FC = () => {
   const isHighWind = windSpeed > 15;
   const isGoodToSpray = !isRaining && !isHighWind && temperature < 34;
 
+  // Drum calculations
+  const totalWaterNeededLiters = Math.max(1, Math.ceil((landDecimal * 10) / 10)) * 10;
+  const totalDrums = Math.max(1, Math.ceil(totalWaterNeededLiters / tankSize));
+  const neemExtractMl = tankSize * 5; // 5ml organic per liter
+  const soapMl = Math.round(tankSize * 1.5);
+
   return (
     <>
-      <div className="p-4 sm:p-5 bg-gradient-to-br from-emerald-50 via-teal-50/50 to-white rounded-3xl border border-emerald-900/10 shadow-xs space-y-3.5">
-        {/* Header with Division Selector and Live Badge */}
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-500 text-white flex items-center justify-center shadow-xs">
-              <CloudSun className="w-6 h-6" />
+      <div className="p-4 sm:p-5 bg-gradient-to-br from-emerald-50 via-teal-50/40 to-white rounded-3xl border border-emerald-900/10 shadow-xs space-y-4">
+        {/* Top Header Row */}
+        <div className="flex items-center justify-between flex-wrap gap-2.5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-800 text-white flex items-center justify-center shadow-xs flex-shrink-0">
+              <CloudSun className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm sm:text-base font-bold font-bengali text-emerald-950">
-                  লাইভ কৃষি আবহাওয়া
+                <span className="text-base sm:text-lg font-bold font-bengali text-emerald-950">
+                  স্মার্ট স্প্রে পরামর্শ ও লাইভ আবহাওয়া
                 </span>
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold font-bengali">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                  <span>লাইভ আপডেট {lastUpdatedTime && `(${lastUpdatedTime})`}</span>
+                  <span>লাইভ {lastUpdatedTime && `(${lastUpdatedTime})`}</span>
                 </span>
               </div>
 
               {/* Division Dropdown Pill */}
               <div className="flex items-center gap-1.5 mt-0.5">
                 <MapPin className="w-3 h-3 text-emerald-700" />
+                <span className="text-xs font-bengali text-ink-muted">বিভাগ:</span>
                 <select
                   value={selectedDivisionIndex}
                   onChange={(e) => setSelectedDivisionIndex(Number(e.target.value))}
-                  className="bg-transparent text-xs font-bold font-bengali text-emerald-800 focus:outline-none cursor-pointer underline underline-offset-2"
+                  className="bg-transparent text-xs font-bold font-bengali text-emerald-900 focus:outline-none cursor-pointer underline underline-offset-2"
                 >
                   {DIVISIONS.map((d, idx) => (
                     <option key={d.nameBn} value={idx}>
@@ -160,99 +185,115 @@ export const WeatherSprayWidget: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => fetchLiveWeather(activeDivision)}
+              onClick={() => fetchLiveWeather(activeDivision, true)}
               title="আবহাওয়া রিফ্রেশ করুন"
-              className="w-8 h-8 rounded-xl bg-white text-ink-muted hover:text-primary flex items-center justify-center border border-emerald-200/80 shadow-2xs transition-all active:scale-95"
+              className="w-9 h-9 rounded-xl bg-white text-ink-muted hover:text-emerald-800 flex items-center justify-center border border-stone-200 shadow-2xs transition-all active:scale-95"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLiveLoading ? "animate-spin text-primary" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isLiveLoading ? "animate-spin text-emerald-800" : ""}`} />
             </button>
 
             <button
               type="button"
               onClick={() => setShowDetail(true)}
-              className="flex items-center gap-1 text-xs font-bold font-bengali text-emerald-900 bg-white hover:bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200/80 shadow-2xs transition-all active:scale-95"
+              className="flex items-center gap-1 text-xs sm:text-sm font-bold font-bengali text-white bg-emerald-800 hover:bg-emerald-900 px-3.5 py-2 rounded-xl shadow-xs transition-all active:scale-95"
             >
-              <span>স্প্রে গাইড</span>
-              <ChevronRight className="w-3.5 h-3.5" />
+              <Calculator className="w-3.5 h-3.5" />
+              <span>স্প্রে ড্রাম হিসাব</span>
+              <ChevronRight className="w-3 h-3 ml-0.5" />
             </button>
           </div>
         </div>
 
-        {/* Live Weather Metrics Strip */}
-        <div className="grid grid-cols-3 gap-2.5 pt-1 text-center">
-          <div className="p-2.5 rounded-2xl bg-white/95 border border-emerald-100 shadow-2xs">
-            <p className="text-xs font-bengali text-ink-muted">তাপমাত্রা</p>
-            <p className="text-lg sm:text-xl font-black font-bengali text-ink">
+        {/* Live Weather Metrics 3-Col Strip */}
+        <div className="grid grid-cols-3 gap-2.5 text-center">
+          <div className="p-3 rounded-2xl bg-white/95 border border-stone-200 shadow-2xs">
+            <p className="text-xs font-bengali text-ink-muted mb-0.5">তাপমাত্রা</p>
+            <p className="text-lg sm:text-xl font-black font-bengali text-emerald-950">
               {toBanglaDigits(temperature)}° সে.
             </p>
           </div>
-          <div className="p-2.5 rounded-2xl bg-white/95 border border-emerald-100 shadow-2xs">
-            <p className="text-xs font-bengali text-ink-muted flex items-center justify-center gap-1">
+          <div className="p-3 rounded-2xl bg-white/95 border border-stone-200 shadow-2xs">
+            <p className="text-xs font-bengali text-ink-muted flex items-center justify-center gap-1 mb-0.5">
               <Droplets className="w-3 h-3 text-cyan-600" />
               <span>আর্দ্রতা</span>
             </p>
-            <p className="text-lg sm:text-xl font-black font-bengali text-ink">
+            <p className="text-lg sm:text-xl font-black font-bengali text-emerald-950">
               {toBanglaDigits(humidity)}%
             </p>
           </div>
-          <div className="p-2.5 rounded-2xl bg-white/95 border border-emerald-100 shadow-2xs">
-            <p className="text-xs font-bengali text-ink-muted flex items-center justify-center gap-1">
-              <Wind className="w-3 h-3 text-emerald-600" />
+          <div className="p-3 rounded-2xl bg-white/95 border border-stone-200 shadow-2xs">
+            <p className="text-xs font-bengali text-ink-muted flex items-center justify-center gap-1 mb-0.5">
+              <Wind className="w-3 h-3 text-teal-600" />
               <span>বাতাস</span>
             </p>
-            <p className="text-lg sm:text-xl font-black font-bengali text-ink">
+            <p className="text-lg sm:text-xl font-black font-bengali text-emerald-950">
               {toBanglaDigits(windSpeed)} কিমি/ঘ.
             </p>
           </div>
         </div>
 
-        {/* Live Spray Advisory Banner (Real Meteorological Condition) */}
+        {/* Live Spray Advisory Status Bar */}
         <div
-          className={`flex items-center gap-2 p-3 rounded-2xl border text-xs sm:text-sm font-bengali shadow-2xs ${
+          className={`flex items-start sm:items-center justify-between gap-3 p-3.5 rounded-2xl border text-xs sm:text-sm font-bengali shadow-2xs ${
             isGoodToSpray
-              ? "bg-emerald-100/80 border-emerald-300 text-emerald-950 font-bold"
-              : "bg-amber-100/80 border-amber-300 text-amber-950 font-bold"
+              ? "bg-emerald-100/90 border-emerald-300 text-emerald-950"
+              : "bg-amber-100/90 border-amber-300 text-amber-950"
           }`}
         >
-          {isGoodToSpray ? (
-            <>
-              <CheckCircle2 className="w-4 h-4 text-emerald-700 flex-shrink-0" />
-              <span>
-                বর্তমানে {activeDivision.nameBn}-এ শান্ত বাতাস ও শুকনো পাতা রয়েছে—আজ ওষুধ বা জৈব স্প্রে করার আদর্শ সময়।
-              </span>
-            </>
-          ) : (
-            <>
-              <AlertTriangle className="w-4 h-4 text-amber-700 flex-shrink-0" />
-              <span>
-                {isRaining
-                  ? "বৃষ্টির সম্ভাবনা রয়েছে—এখন কোনো স্প্রে করবেন না।"
-                  : "বাতাসের বেগ বেশি—স্প্রে করলে ওষুধ ছিটকে নষ্ট হতে পারে, বাতাস শান্ত হলে স্প্রে করুন।"}
-              </span>
-            </>
-          )}
+          <div className="flex items-center gap-2.5">
+            {isGoodToSpray ? (
+              <CheckCircle2 className="w-5 h-5 text-emerald-700 flex-shrink-0" />
+            ) : (
+              <AlertTriangle className="w-5 h-5 text-amber-700 flex-shrink-0" />
+            )}
+            <div>
+              <p className="font-bold leading-tight">
+                {isGoodToSpray
+                  ? "আবহাওয়া সম্পূর্ণ অনুকূল: এখন গাছে স্প্রে করার উপযুক্ত সময়"
+                  : isRaining
+                  ? "আজ স্প্রে করবেন না: বৃষ্টিপাতের সম্ভাবনা রয়েছে"
+                  : isHighWind
+                  ? "সতর্কতা: বাতাসে ওষুধের বিস্তার ঘটবে, বাতাস কমলে স্প্রে করুন"
+                  : "সতর্কতা: প্রখর রোদে বা শিশির ভেজা অবস্থায় স্প্রে করবেন না"}
+              </p>
+              <p className="text-2xs sm:text-xs font-normal opacity-90 mt-0.5">
+                {isGoodToSpray
+                  ? "বাতাস শান্ত ও আর্দ্রতা সহনীয়; বিকেলে বা সকালের রোদ ওঠার পর স্প্রে সবচেয়ে কার্যকর।"
+                  : "বৃষ্টি বা প্রচণ্ড বাতাসে স্প্রে করলে ঔষধ ধুয়ে যাবে বা উড়ে যাবে।"}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Spray Detail Modal */}
+      {/* Expanded Spray Guide & Drum Calculator Modal */}
       {showDetail && (
         <div
           role="dialog"
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
         >
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-ground-border space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-ground-border">
-              <div className="flex items-center gap-2">
-                <CloudSun className="w-6 h-6 text-harvest" />
-                <h3 className="text-xl font-bold font-bengali text-ink">
-                  স্প্রে করার সেরা সময়
-                </h3>
+          <div className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-stone-200 space-y-4 max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-stone-200">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                  <Calculator className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold font-bengali text-emerald-950">
+                    স্মার্ট স্প্রে ড্রাম ক্যালকুলেটর
+                  </h3>
+                  <p className="text-xs font-bengali text-ink-muted">
+                    জমির মাপ ও ট্যাংকের ধারণক্ষমতা অনুযায়ী সঠিক পানির হিসাব
+                  </p>
+                </div>
               </div>
               <button
+                type="button"
                 onClick={() => setShowDetail(false)}
                 className="w-8 h-8 rounded-full bg-stone-100 text-ink-muted hover:text-ink flex items-center justify-center"
               >
@@ -260,34 +301,116 @@ export const WeatherSprayWidget: React.FC = () => {
               </button>
             </div>
 
-            <div className="space-y-3 text-sm font-bengali text-ink leading-relaxed">
-              <div className="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200">
-                <p className="font-bold text-emerald-950 mb-1">সকালের সেরা সময়:</p>
-                <p className="text-emerald-800">
-                  সকাল ৮:০০টা থেকে ১০:০০টা (পাতার কুয়াশা বা শিশির শুকিয়ে যাওয়ার ঠিক পর)।
-                </p>
+            {/* Sprayer Drum Size Selector */}
+            <div className="space-y-1.5">
+              <label className="block text-xs sm:text-sm font-bold font-bengali text-ink">
+                আপনার স্প্রে ট্যাংকের মাপ:
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { size: 10, label: "১০ লিটার" },
+                  { size: 16, label: "১৬ লিটার (স্ট্যান্ডার্ড)" },
+                  { size: 20, label: "২০ লিটার" },
+                ].map((item) => (
+                  <button
+                    key={item.size}
+                    type="button"
+                    onClick={() => setTankSize(item.size)}
+                    className={`py-2 px-2 rounded-xl text-xs sm:text-sm font-bold font-bengali border transition-all ${
+                      tankSize === item.size
+                        ? "bg-emerald-800 text-white border-emerald-800 shadow-xs"
+                        : "bg-white text-ink border-stone-200 hover:bg-stone-50"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Land Area Selector */}
+            <div className="space-y-1.5">
+              <label className="block text-xs sm:text-sm font-bold font-bengali text-ink">
+                জমির পরিমাণ (শতাংশ):
+              </label>
+              <div className="grid grid-cols-4 gap-1.5">
+                {[
+                  { area: 1, label: "১ শতক" },
+                  { area: 3, label: "৩ শতক" },
+                  { area: 5, label: "৫ শতক" },
+                  { area: 10, label: "১০ শতক" },
+                  { area: 20, label: "২০ শতক" },
+                  { area: 33, label: "১ বিঘা (৩৩ শতক)" },
+                  { area: 50, label: "৫০ শতক" },
+                  { area: 100, label: "১ একর" },
+                ].map((item) => (
+                  <button
+                    key={item.area}
+                    type="button"
+                    onClick={() => setLandDecimal(item.area)}
+                    className={`py-1.5 px-1 rounded-xl text-xs font-bold font-bengali border transition-all ${
+                      landDecimal === item.area
+                        ? "bg-emerald-800 text-white border-emerald-800 shadow-xs"
+                        : "bg-white text-ink border-stone-200 hover:bg-stone-50"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Real Calculations Result Box */}
+            <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-2.5">
+              <h4 className="text-xs font-bold font-bengali text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-emerald-700" />
+                <span>প্রয়োজনীয় পানির সঠিক অনুপাত:</span>
+              </h4>
+
+              <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm font-bengali">
+                <div className="p-2.5 bg-white rounded-xl border border-emerald-100">
+                  <p className="text-ink-muted">মোট স্প্রে ড্রাম লাগবে:</p>
+                  <p className="text-base sm:text-lg font-bold text-emerald-950">
+                    প্রায় {toBanglaDigits(totalDrums)} ড্রাম
+                  </p>
+                </div>
+                <div className="p-2.5 bg-white rounded-xl border border-emerald-100">
+                  <p className="text-ink-muted">প্রয়োজনীয় পানি:</p>
+                  <p className="text-base sm:text-lg font-bold text-emerald-950">
+                    {toBanglaDigits(totalDrums * tankSize)} লিটার
+                  </p>
+                </div>
               </div>
 
-              <div className="p-3.5 bg-amber-50 rounded-2xl border border-amber-200">
-                <p className="font-bold text-amber-950 mb-1">বিকেলের সেরা সময়:</p>
-                <p className="text-amber-800">
-                  বিকেল ৪:০০টা থেকে ৫:৩০টা (কড়া রোদের তেজ কমে গেলে)।
-                </p>
-              </div>
-
-              <div className="p-3.5 bg-red-50 rounded-2xl border border-red-200">
-                <p className="font-bold text-red-950 mb-1">কখন স্প্রে করবেন না:</p>
-                <p className="text-red-800">
-                  দুপুরের তীব্র রোদে, বৃষ্টির আগে বা ঝড়ো বাতাসে কখনো স্প্রে করবেন না। এতে পাতা পুড়ে যেতে পারে এবং ওষুধ নষ্ট হয়।
+              {/* Organic Mixture Tip */}
+              <div className="p-2.5 bg-white/90 rounded-xl border border-emerald-100 text-xs font-bengali text-ink-muted space-y-1">
+                <p>
+                  <strong className="text-emerald-900">🌿 ঘরোয়া নিমতেল ফর্মুলা:</strong> প্রতি ট্যাংকে ({toBanglaDigits(tankSize)} লিটার) প্রায়{" "}
+                  <strong className="text-ink">{toBanglaDigits(neemExtractMl)} মিলি</strong> নিম তেল এবং{" "}
+                  <strong className="text-ink">{toBanglaDigits(soapMl)} মিলি</strong> তরল সাবান গুলে স্প্রে করুন।
                 </p>
               </div>
             </div>
 
+            {/* Golden Rules for Spraying */}
+            <div className="p-3 bg-stone-50 rounded-2xl border border-stone-200 text-xs font-bengali text-ink-muted space-y-1.5">
+              <p className="font-bold text-ink flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                <span>স্প্রে করার ৩টি সুবর্ণ নিয়ম:</span>
+              </p>
+              <ul className="list-disc list-inside space-y-0.5 leading-relaxed">
+                <li>সকালে শিশির শুকানোর পর (৯টা-১১টা) অথবা বিকালে (৩টা-৫টা) স্প্রে করুন।</li>
+                <li>বাতাসের অনুকূলে স্প্রে করুন যাতে ঔষধ মুখে বা শরীরে না আসে।</li>
+                <li>কীটনাশকের সঠিক মাত্রা প্যাকেটের লেবেল বা কৃষি কর্মকর্তার পরামর্শ দেখে নিন।</li>
+              </ul>
+            </div>
+
             <button
+              type="button"
               onClick={() => setShowDetail(false)}
-              className="w-full py-3 bg-primary text-white font-bold font-bengali rounded-2xl shadow-sm hover:bg-primary-dark transition-all"
+              className="w-full py-3 bg-emerald-800 text-white rounded-xl font-bold font-bengali text-sm hover:bg-emerald-900 transition-all shadow-xs"
             >
-              বুঝেছি
+              বন্ধ করুন
             </button>
           </div>
         </div>

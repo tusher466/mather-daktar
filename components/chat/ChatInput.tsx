@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef } from "react";
-import { Send, ImagePlus, X } from "lucide-react";
+import { Send, ImagePlus, X, Sparkles } from "lucide-react";
 import { MicButton } from "./MicButton";
 import { compressImageForUpload } from "@/lib/image/compress";
 import { STRINGS_BN } from "@/lib/strings.bn";
@@ -53,11 +53,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="fixed bottom-16 left-0 right-0 z-30 bg-white/95 backdrop-blur-xl border-t border-ground-border/80 pb-safe">
-      <div className="max-w-[480px] mx-auto p-3">
+    <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-xl border-t border-stone-200/80 shadow-lg pb-safe">
+      <div className="max-w-4xl mx-auto p-3 sm:p-4">
         {/* Attached image preview */}
         {attachedImageBase64 && (
-          <div className="relative inline-block mb-2 rounded-2xl overflow-hidden border border-ground-border shadow-xs">
+          <div className="relative inline-block mb-2 rounded-2xl overflow-hidden border border-emerald-300 shadow-xs animate-fade-in">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={attachedImageBase64}
@@ -74,7 +74,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           </div>
         )}
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Attach photo button */}
           <input
             ref={fileInputRef}
@@ -87,7 +87,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             aria-label="ছবি সংযুক্ত করুন"
-            className="w-12 h-12 rounded-2xl flex items-center justify-center text-ink-muted hover:text-primary bg-white hover:bg-stone-50 transition-colors border border-ground-border shadow-2xs flex-shrink-0 active:scale-95"
+            title="ছবি সংযুক্ত করুন"
+            className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center text-ink-muted hover:text-emerald-800 bg-stone-100/80 hover:bg-emerald-50 transition-colors border border-stone-200 shadow-2xs flex-shrink-0 active:scale-95"
           >
             <ImagePlus className="w-5 h-5 stroke-[2]" />
           </button>
@@ -100,16 +101,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               onChange={(e) => onChangeInputText(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={isLoading}
-              placeholder={
-                isListening
-                  ? STRINGS_BN.chat.listening
-                  : STRINGS_BN.chat.inputPlaceholder
-              }
-              className="w-full min-h-[56px] px-4 rounded-2xl border border-ground-border bg-white text-base sm:text-lg font-bengali text-ink focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-ink-muted/50 shadow-2xs transition-all"
+              placeholder="রোগ বা ফসল নিয়ে আপনার প্রশ্ন লিখুন (বা মাইকে বলুন)..."
+              className="w-full h-11 sm:h-12 pl-4 pr-10 rounded-2xl border border-stone-300 bg-stone-50/70 text-sm sm:text-base font-bengali text-ink placeholder:text-ink-muted/60 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white focus:border-transparent transition-all shadow-inner"
             />
           </div>
 
-          {/* Mic Button */}
+          {/* Large Voice Microphone Button */}
           {canListen && (
             <MicButton
               isListening={isListening}
@@ -123,10 +120,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             type="button"
             onClick={onSend}
             disabled={isLoading || (!inputText.trim() && !attachedImageBase64)}
-            aria-label="পাঠান"
-            className="w-14 h-14 min-w-[56px] min-h-[56px] rounded-2xl bg-gradient-to-r from-[#1E6B39] to-[#145328] hover:from-[#257E44] hover:to-[#175C2D] text-white flex items-center justify-center shadow-md shadow-emerald-950/20 active:scale-95 transition-all disabled:opacity-40 select-none flex-shrink-0"
+            aria-label="বার্তা পাঠান"
+            className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center text-white transition-all flex-shrink-0 shadow-md ${
+              isLoading || (!inputText.trim() && !attachedImageBase64)
+                ? "bg-stone-300 text-stone-500 cursor-not-allowed shadow-none"
+                : "bg-emerald-800 hover:bg-emerald-900 active:scale-95 shadow-emerald-900/20"
+            }`}
           >
-            <Send className="w-5 h-5" />
+            <Send className="w-5 h-5 stroke-[2.2]" />
           </button>
         </div>
       </div>

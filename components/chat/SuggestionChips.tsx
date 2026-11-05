@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { MessageSquare } from "lucide-react";
+import { Sparkles, MessageCircleQuestion } from "lucide-react";
 
 interface SuggestionChipsProps {
   suggestions: string[];
@@ -15,19 +15,20 @@ export const SuggestionChips: React.FC<SuggestionChipsProps> = ({
   if (!suggestions || suggestions.length === 0) return null;
 
   return (
-    <div className="py-2 space-y-2">
-      <p className="text-sm font-bold font-bengali text-ink-muted">
-        প্রস্তাবিত প্রশ্ন:
-      </p>
+    <div className="py-2.5 space-y-2">
+      <div className="flex items-center gap-1.5 text-xs font-bold font-bengali text-emerald-900">
+        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+        <span>প্রস্তাবিত সাধারণ প্রশ্নসমূহ (ট্যাপ করুন):</span>
+      </div>
       <div className="flex flex-wrap gap-2">
         {suggestions.map((suggestion, idx) => (
           <button
             key={idx}
             type="button"
             onClick={() => onSelectSuggestion(suggestion)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-primary-light border border-ground-border hover:border-primary/40 text-ink hover:text-primary text-base font-bengali transition-colors shadow-xs active:scale-95 text-left"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white hover:bg-emerald-50 border border-stone-200/90 hover:border-emerald-400 text-ink hover:text-emerald-900 text-xs sm:text-sm font-bengali transition-all shadow-2xs hover:shadow-xs active:scale-95 text-left"
           >
-            <MessageSquare className="w-4 h-4 text-primary flex-shrink-0" />
+            <MessageCircleQuestion className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" />
             <span>{suggestion}</span>
           </button>
         ))}

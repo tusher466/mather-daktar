@@ -9,7 +9,7 @@ import { getSavedCrop, saveCropPreference } from "@/lib/storage/preferences";
 import { getBanglaDate } from "@/lib/bangla/calendar";
 import { SeasonAdvice } from "@/types";
 import { STRINGS_BN } from "@/lib/strings.bn";
-import { Calendar, Sprout, RefreshCw } from "lucide-react";
+import { Calendar, Sprout, RefreshCw, Sparkles, Sun } from "lucide-react";
 
 export default function SeasonPage() {
   const [selectedCropId, setSelectedCropId] = useState<string>("rice");
@@ -110,48 +110,35 @@ export default function SeasonPage() {
 
   return (
     <PageShell>
-      <div className="space-y-5 animate-fade-in pb-12">
-        {/* Title */}
-        <div className="pt-1">
-          <h1 className="text-2xl sm:text-3xl font-black font-bengali text-ink">
-            {STRINGS_BN.season.title}
-          </h1>
-          <p className="text-base font-bengali text-ink-muted">
-            বাংলা মাস ও চলতি কৃষি মৌসুম অনুযায়ী সঠিক সময়ে সঠিক প্রস্তুতি নিন।
-          </p>
-        </div>
-
-        {/* Current Month & Agricultural Season Context Banner */}
-        <div className="bg-primary-light border border-primary/20 rounded-2xl p-4 shadow-sm space-y-2">
+      <div className="space-y-4 animate-fade-in pb-12">
+        {/* Modern Season Hero Header */}
+        <div className="p-5 bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-900 text-white rounded-3xl shadow-sm space-y-2">
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-primary flex-shrink-0" />
-              <span className="text-base font-bold font-bengali text-ink">
-                {STRINGS_BN.season.monthLabel}{" "}
-                <strong className="text-primary text-lg">
-                  {banglaDateInfo.banglaMonth}
-                </strong>
-              </span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-emerald-100 text-xs font-bold font-bengali">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>চলতি বাংলা মাস: {banglaDateInfo.banglaMonth}</span>
             </div>
-
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white text-xs sm:text-sm font-bold font-bengali text-primary border border-primary/20">
-              <Sprout className="w-4 h-4 text-primary" />
-              <span>{banglaDateInfo.seasonNameBn}</span>
+            <div className="px-2.5 py-0.5 rounded-full bg-emerald-900/60 text-emerald-200 text-xs font-bold font-bengali border border-emerald-500/30">
+              {banglaDateInfo.seasonNameBn}
             </div>
           </div>
 
-          <p className="text-sm font-bengali text-ink-muted leading-relaxed">
+          <h1 className="text-2xl sm:text-3xl font-black font-bengali text-white">
+            {STRINGS_BN.season.title}
+          </h1>
+
+          <p className="text-xs sm:text-sm font-bengali text-emerald-100/90 leading-relaxed">
             {banglaDateInfo.seasonDescriptionBn}{" "}
             {selectedCropId === "rice" && (
-              <strong>(বর্তমানে {banglaDateInfo.riceSeasonBn} এর সময়)</strong>
+              <strong className="text-amber-300">(বর্তমানে {banglaDateInfo.riceSeasonBn} এর মৌসুম)</strong>
             )}
           </p>
         </div>
 
         {/* Crop Selector Horizontal Tabs */}
         <div>
-          <label className="block text-base font-bold font-bengali text-ink mb-2">
-            ফসল পরিবর্তন করুন:
+          <label className="block text-xs font-bold font-bengali text-ink-muted uppercase tracking-wider mb-2 px-1">
+            ফসল নির্বাচন করুন:
           </label>
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none no-scrollbar">
             {CROPS.map((crop) => {
@@ -161,10 +148,10 @@ export default function SeasonPage() {
                   key={crop.id}
                   type="button"
                   onClick={() => handleSelectCrop(crop.id)}
-                  className={`px-3.5 py-2 rounded-xl text-base font-bengali whitespace-nowrap transition-all select-none border min-h-[44px] ${
+                  className={`px-4 py-2.5 rounded-2xl text-base font-bengali whitespace-nowrap transition-all select-none border min-h-[46px] active:scale-95 ${
                     isSelected
-                      ? "bg-primary text-white border-primary font-bold shadow-sm"
-                      : "bg-white text-ink border-ground-border hover:border-primary/40"
+                      ? "bg-gradient-to-r from-emerald-700 to-emerald-800 text-white border-emerald-600 font-bold shadow-md shadow-emerald-950/20"
+                      : "bg-white text-ink border-ground-border hover:bg-stone-50 shadow-2xs"
                   }`}
                 >
                   {crop.nameBn}
@@ -184,7 +171,7 @@ export default function SeasonPage() {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="flex flex-col items-center justify-center py-12 text-center bg-white rounded-2xl border border-ground-border">
+          <div className="flex flex-col items-center justify-center py-12 text-center bg-white rounded-3xl border border-ground-border shadow-xs">
             <RefreshCw className="w-8 h-8 text-primary animate-spin mb-3" />
             <p className="text-lg font-bold font-bengali text-ink">
               {STRINGS_BN.season.loading}

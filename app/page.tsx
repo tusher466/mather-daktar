@@ -2,6 +2,9 @@
 
 import React from "react";
 import { PageShell } from "@/components/layout/PageShell";
+import { HeroIllustration } from "@/components/home/HeroIllustration";
+import { WeatherSprayWidget } from "@/components/home/WeatherSprayWidget";
+import { DosageCalculatorModal } from "@/components/home/DosageCalculatorModal";
 import { CropGrid } from "@/components/diagnose/CropGrid";
 import { PhotoPicker } from "@/components/diagnose/PhotoPicker";
 import { PhotoPreview } from "@/components/diagnose/PhotoPreview";
@@ -9,7 +12,6 @@ import { LoadingLeaf } from "@/components/diagnose/LoadingLeaf";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { useDiagnose } from "@/hooks/useDiagnose";
 import { STRINGS_BN } from "@/lib/strings.bn";
-import { Sparkles, ShieldCheck } from "lucide-react";
 
 export default function DoctorPage() {
   const {
@@ -36,26 +38,15 @@ export default function DoctorPage() {
       {/* Calm full-screen loading state */}
       {isLoading && <LoadingLeaf isSlow={isSlowLoading} />}
 
-      <div className="space-y-5">
-        {/* Main Modern Heading Banner */}
-        <div className="p-4 bg-gradient-to-br from-white via-white to-emerald-50/60 rounded-3xl border border-emerald-900/10 shadow-xs">
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100/80 text-emerald-800 text-xs font-bold font-bengali">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>কৃত্রিম বুদ্ধিমত্তা চালিত ফসল ক্লিনিক</span>
-            </div>
-            <div className="flex items-center gap-1 text-[11px] font-bold font-bengali text-emerald-700 bg-white px-2 py-0.5 rounded-full border border-emerald-200">
-              <ShieldCheck className="w-3 h-3 text-emerald-600" />
-              <span>১০০% নিরাপদ</span>
-            </div>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black font-bengali text-ink leading-tight">
-            {STRINGS_BN.diagnose.heading}
-          </h1>
-          <p className="text-base font-bengali text-ink-muted mt-1 leading-relaxed">
-            প্রথমে ফসল বেছে নিন, তারপর আক্রান্ত পাতার ছবি তুলুন।
-          </p>
-        </div>
+      <div className="space-y-4 pb-4">
+        {/* Modern Graphic Hero Banner */}
+        <HeroIllustration />
+
+        {/* Live Weather & Smart Spray Suitability Widget */}
+        <WeatherSprayWidget />
+
+        {/* Smart Drum & Water Dosage Calculator Feature */}
+        <DosageCalculatorModal />
 
         {/* Error Message if any */}
         {errorMessage && (
@@ -76,9 +67,9 @@ export default function DoctorPage() {
         )}
 
         {/* 1. Crop Selection Grid */}
-        <section aria-label="ফসল নির্বাচন" className="space-y-2">
+        <section aria-label="ফসল নির্বাচন" className="space-y-2 pt-2">
           <div className="flex items-center justify-between text-xs font-bold font-bengali text-ink-muted uppercase tracking-wider px-1">
-            <span>ধাপ ১: ফসল নির্বাচন করুন</span>
+            <span>ধাপ ১: আক্রান্ত ফসল নির্বাচন করুন</span>
           </div>
           <CropGrid
             selectedCropId={selectedCropId}
@@ -89,9 +80,9 @@ export default function DoctorPage() {
         </section>
 
         {/* 2. Photo Capture / Gallery or Photo Preview */}
-        <section aria-label="পাতার ছবি" className="space-y-2 pt-1">
+        <section aria-label="পাতার ছবি" className="space-y-2 pt-2">
           <div className="flex items-center justify-between text-xs font-bold font-bengali text-ink-muted uppercase tracking-wider px-1">
-            <span>ধাপ ২: আক্রান্ত পাতার ছবি দিন</span>
+            <span>ধাপ ২: আক্রান্ত অংশের ছবি দিন</span>
           </div>
           {!imagePreviewUrl ? (
             <PhotoPicker onPhotoSelected={handleImageSelected} />

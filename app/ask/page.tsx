@@ -9,7 +9,7 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { useChat } from "@/hooks/useChat";
 import { useSpeech } from "@/hooks/useSpeech";
 import { STRINGS_BN } from "@/lib/strings.bn";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Bot, Sparkles, MessageSquare } from "lucide-react";
 
 function ChatContent() {
   const {
@@ -34,13 +34,11 @@ function ChatContent() {
     canSpeak,
     speak,
   } = useSpeech((transcript) => {
-    // Append or set transcript into chat input
     setInputText((prev) => (prev ? `${prev} ${transcript}` : transcript));
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto scroll to latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
@@ -59,32 +57,42 @@ function ChatContent() {
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-140px)] pb-28">
-      {/* Top Header & Clear Conversation Button */}
-      <div className="flex items-center justify-between pb-3 border-b border-ground-border mb-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black font-bengali text-ink">
-            {STRINGS_BN.chat.title}
-          </h1>
-          <p className="text-sm font-bengali text-ink-muted">
-            {diagnosisContextString
-              ? STRINGS_BN.chat.contextBannerPrefix + " পূর্বের রোগ নির্ণয়"
-              : STRINGS_BN.chat.subtitle}
-          </p>
-        </div>
+      {/* Top Header Card */}
+      <div className="p-4 bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-900 text-white rounded-3xl shadow-sm mb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-emerald-200">
+              <Bot className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-lg sm:text-xl font-bold font-bengali leading-none">
+                  {STRINGS_BN.chat.title}
+                </h1>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              </div>
+              <p className="text-xs font-bengali text-emerald-100/80 mt-1">
+                {diagnosisContextString
+                  ? STRINGS_BN.chat.contextBannerPrefix + " পূর্বের রোগ নির্ণয়"
+                  : "সহজ বাংলায় ফসলের পরামর্শদাতা এআই"}
+              </p>
+            </div>
+          </div>
 
-        <button
-          type="button"
-          onClick={handleClearChat}
-          className="flex items-center gap-1.5 text-xs sm:text-sm font-bold font-bengali text-ink-muted hover:text-danger px-2.5 py-1.5 rounded-lg border border-ground-border bg-white transition-colors"
-        >
-          <RotateCcw className="w-4 h-4" />
-          <span>{STRINGS_BN.actions.newChat}</span>
-        </button>
+          <button
+            type="button"
+            onClick={handleClearChat}
+            className="flex items-center gap-1 text-xs font-bold font-bengali text-white bg-white/15 hover:bg-white/25 px-2.5 py-1.5 rounded-xl border border-white/20 transition-all select-none active:scale-95"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>নতুন আলাপ</span>
+          </button>
+        </div>
       </div>
 
       {/* Mic Permission Warning */}
       {micPermissionDenied && (
-        <div className="mb-3 p-3 bg-harvest-light border border-harvest-border rounded-xl text-ink font-bengali text-sm">
+        <div className="mb-3 p-3.5 bg-amber-50 border border-amber-200 rounded-2xl text-ink font-bengali text-sm shadow-2xs">
           {STRINGS_BN.errors.micDenied}
         </div>
       )}
@@ -110,7 +118,7 @@ function ChatContent() {
 
         {/* Typing indicator */}
         {isLoading && (
-          <div className="flex items-center gap-2 p-3 bg-white border border-ground-border rounded-2xl w-fit text-ink-muted text-base font-bengali">
+          <div className="flex items-center gap-2 p-3 bg-white border border-ground-border rounded-2xl w-fit text-ink-muted text-sm font-bengali shadow-2xs animate-fade-in">
             <span className="w-2 h-2 rounded-full bg-primary animate-bounce" />
             <span
               className="w-2 h-2 rounded-full bg-primary animate-bounce"
@@ -120,7 +128,7 @@ function ChatContent() {
               className="w-2 h-2 rounded-full bg-primary animate-bounce"
               style={{ animationDelay: "0.4s" }}
             />
-            <span className="ml-1 text-sm">ডাক্তার লিখছেন...</span>
+            <span className="ml-1 font-semibold text-emerald-900">ডাক্তার লিখছেন...</span>
           </div>
         )}
 

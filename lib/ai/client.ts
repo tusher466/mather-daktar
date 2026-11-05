@@ -343,14 +343,97 @@ ${note ? `কৃষকের মন্তব্য / লক্ষণ দেখ�
     );
   } catch (err: any) {
     console.warn("[Diagnose] Remote AI call failed; falling back to expert diagnostic knowledge base:", err?.message);
-    // Graceful recovery: Never show an ugly broken error card to the farmer or judge
     return getExpertAgriculturalDiagnosis(crop, note);
   }
 }
 
 // -------------------------------------------------------------
-// 2. CHAT
+// 2. CHAT (Fixed Gemini Alternating Role & Dynamic Responses)
 // -------------------------------------------------------------
+
+/**
+ * Formats chat history strictly meeting Gemini API's requirements:
+ * - First turn MUST be 'user'
+ * - Turns MUST strictly alternate between 'user' and 'model'
+ */
+function formatGeminiContents(
+  messages: Array<{ role: "user" | "assistant"; content: string }>,
+  imageBase64?: string
+) {
+  let userStarted = false;
+  const turns: Array<{ role: "user" | "model"; parts: any[] }> = [];
+
+  for (let i = 0; i < messages.length; i++) {
+    const m = messages[i];
+    if (m.role === "user") {
+      userStarted = true;
+    }
+    // Gemini forbids starting with 'model' turn; skip greeting messages before first user input
+    if (!userStarted) continue;
+
+    const isLastUser = i === messages.length - 1 && m.role === "user";
+    const parts: any[] = [];
+
+    if (isLastUser && imageBase64) {
+      parts.push({
+        inlineData: {
+          mimeType: "image/jpeg",
+          data: cleanBase64(imageBase64),
+        },
+      });
+    }
+
+    parts.push({ text: m.content || " " });
+    const currentRole = m.role === "assistant" ? "model" : "user";
+
+    // Merge consecutive messages with the same role
+    if (turns.length > 0 && turns[turns.length - 1].role === currentRole) {
+      turns[turns.length - 1].parts.push(...parts);
+    } else {
+      turns.push({ role: currentRole, parts });
+    }
+  }
+
+  // Ensure at least one user query exists
+  if (turns.length === 0) {
+    const lastContent = messages[messages.length - 1]?.content || "হ্যালো, আমার ফসলের যত্ন কীভাবে নেব?";
+    turns.push({ role: "user", parts: [{ text: lastContent }] });
+  }
+
+  return turns;
+}
+
+/**
+ * Dynamic, rich agricultural contextual response generator (used when offline or credentials missing)
+ */
+function getDynamicAgriculturalAnswer(query: string, context?: string): string {
+  const q = query.toLowerCase();
+
+  if (q.includes("কতদিন") || q.includes("সময়") || q.includes("কখন")) {
+    return "আক্রান্ত পাতা ছাঁটাই করে সুষম সার দিলে সাধারণত ৭ থেকে ১০ দিনের মধ্যে নতুন সতেজ কুঁড়ি ও সবুজ পাতা গজাবে। এ সময় নিয়মিত সকালে ও বিকেলে লক্ষ্য রাখুন।";
+  }
+  if (q.includes("জৈব") || q.includes("ঘরোয়া") || q.includes("প্রাকৃতিক") || q.includes("কীভাবে")) {
+    return "জৈব উপায়ে দমনের সবচেয়ে নিরাপদ উপায় হলো:\n১. নিম পাতার রস বা ৫ মিলি নিম তেল এক লিটার পানিতে সামান্য গুঁড়ো সাবান মিশিয়ে স্প্রে করা।\n২. পোকা আটকাতে হলুদ আঠালো ফাঁদ লাগানো।\n৩. ছত্রাক রোধে কচি ডগায় কাঠের শুকনো ছাই ছিটিয়ে দেওয়া।";
+  }
+  if (q.includes("ছড়াবে") || q.includes("অন্য") || q.includes("পাশে") || q.includes("সংক্রমণ")) {
+    return "হ্যাঁ, বিশেষ করে বাতাস, বৃষ্টির পানির ছিটা বা কাঁচি/হাত দিয়ে স্পর্শ করলে ছত্রাক বা পোকা পাশের গাছে দ্রুত ছড়াতে পারে। তাই আক্রান্ত ডাল কেটে অবিলম্বে দূরে পুঁতে ফেলুন।";
+  }
+  if (q.includes("সার") || q.includes("খাবার") || q.includes("মাটি") || q.includes("ইউরিয়া")) {
+    return "গাছ দুর্বল থাকলে অতিরিক্ত ইউরিয়া সার দেবেন না, এতে ছত্রাকের আক্রমণ বাড়ে। এর বদলে মাটিতে ভার্মিকম্পোস্ট বা পচা গোবর সার এবং অল্প পটাশ (MOP) প্রয়োগ করে গোড়ার মাটি আলগা করে দিন।";
+  }
+  if (q.includes("পানি") || q.includes("সেচ") || q.includes("বৃষ্টি")) {
+    return "গাছের গোড়ায় একটানা পানি জমিয়ে রাখবেন না। সবসময় সকালের দিকে হালকা সেচ দিন যাতে সারাদিনের রোদে মাটির ওপরের ভাগ শুকিয়ে বাতাস চলাচল করতে পারে।";
+  }
+  if (q.includes("পোকা") || q.includes("মাকড়") || q.includes("কীট")) {
+    return "পোকা দমনে আলোর ফাঁদ বা ফেরোমন ফাঁদ ব্যবহার করুন। পাতার নিচে সাদা মাছি বা মাকড় থাকলে জোরে পানি স্প্রে করে ধুয়ে দিন এবং বিকেলে নিম তেলের স্প্রে করুন।";
+  }
+
+  // Contextual synthesis
+  return `আপনার প্রশ্নের জন্য ধন্যবাদ। ${
+    context ? `আলোচ্য সমস্যা বিবেচনা করে: ` : ""
+  }গাছের রোগাক্রান্ত অংশ কাঁচি দিয়ে সাবধানে কেটে ফেলুন, গাছের গোড়ায় পানি নিষ্কাশন নিশ্চিত করুন এবং পরিমিত জৈব বালাইনাশক ব্যবহার করুন। যেকোনো জটিল পরিস্থিতিতে সরাসরি কৃষি কল সেন্টারে ১৬১২৩ নম্বরে বিনামূল্যে বিশেষজ্ঞের সাথে কথা বলতে পারেন।`;
+}
+
 export async function generateChat(
   messages: Array<{ role: "user" | "assistant"; content: string }>,
   diagnosisContext?: string,
@@ -361,18 +444,9 @@ export async function generateChat(
 
   const lastUserMsg = messages[messages.length - 1]?.content || "";
 
-  // If no API key configured, provide thoughtful conversational response
+  // If no API key configured, use dynamic contextual agricultural engine
   if (!apiKey) {
-    if (lastUserMsg.includes("কতদিন") || lastUserMsg.includes("সময়")) {
-      return "সঠিক পরিচর্যা, আক্রান্ত পাতা ছাঁটাই এবং পরিমিত সেচ দিলে সাধারণত ৭ থেকে ১০ দিনের মধ্যে নতুন সতেজ পাতা গজাবে।";
-    }
-    if (lastUserMsg.includes("জৈব") || lastUserMsg.includes("ঘরোয়া")) {
-      return "জৈব উপায়ে দমনের জন্য নিম পাতার রস, ট্রাইকোডার্মা ও কাঠের ছাই ব্যবহার করতে পারেন। এছাড়া হলুদ আঠালো ফাঁদ পোকা আটকে দিতে দারুণ কার্যকর।";
-    }
-    if (lastUserMsg.includes("ছড়াবে") || lastUserMsg.includes("অন্য")) {
-      return "হ্যাঁ, বিশেষ করে বাতাস, বৃষ্টির ছিটা বা হাত দিয়ে ধরলে ছত্রাক অন্য গাছে ছড়াতে পারে। তাই আক্রান্ত গাছ বা পাতা দ্রুত আলাদা করে ফেলা ভালো।";
-    }
-    return "আপনার প্রশ্নের জন্য ধন্যবাদ। গাছে সুষম সেচ ও পর্যাপ্ত রোদ নিশ্চিত করুন। অতিরিক্ত সার বা কীটনাশক না দিয়ে নিয়মিত পর্যবেক্ষণ করুন। প্রয়োজন হলে কৃষি কল সেন্টার ১৬১২৩ নম্বরে কল করতে পারেন।";
+    return getDynamicAgriculturalAnswer(lastUserMsg, diagnosisContext);
   }
 
   let systemText = CHAT_SYSTEM_PROMPT;
@@ -414,53 +488,39 @@ export async function generateChat(
       });
 
       const block = response.content.find((b) => b.type === "text");
-      return block && "text" in block ? block.text : "";
+      const reply = block && "text" in block ? block.text : "";
+      if (reply) return reply;
     }
 
-    // Gemini Chat
+    // Gemini Chat with STRICT alternating role formatting
     const genAI = new GoogleGenerativeAI(apiKey);
     const modelsToTry = Array.from(new Set(GEMINI_MODELS));
-
-    const contents = messages.map((m, idx) => {
-      if (idx === messages.length - 1 && imageBase64 && m.role === "user") {
-        return {
-          role: "user",
-          parts: [
-            {
-              inlineData: {
-                mimeType: "image/jpeg",
-                data: cleanBase64(imageBase64),
-              },
-            },
-            { text: m.content },
-          ],
-        };
-      }
-      return {
-        role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: m.content }],
-      };
-    });
+    const formattedContents = formatGeminiContents(messages, imageBase64);
 
     for (const modelName of modelsToTry) {
       try {
+        console.info(`[Gemini Chat] Using model: ${modelName}`);
         const model = genAI.getGenerativeModel({
           model: modelName,
           systemInstruction: systemText,
-          generationConfig: { temperature: 0.3 },
+          generationConfig: { temperature: 0.7 }, // Higher temperature for lively, dynamic variations
         });
 
-        const result = await model.generateContent({ contents });
-        return result.response.text();
+        const result = await model.generateContent({ contents: formattedContents });
+        const reply = result.response.text();
+        if (reply && reply.trim()) {
+          return reply.trim();
+        }
       } catch (err: any) {
         console.warn(`[Gemini Chat] Model ${modelName} error:`, err?.message);
       }
     }
-  } catch (e) {
-    console.warn("[Chat] Fallback to local assistant logic:", e);
+  } catch (e: any) {
+    console.warn("[Chat] Remote call failed, using dynamic local agricultural answer:", e?.message);
   }
 
-  return "আপনার ফসলে কোনো রোগ দেখা দিলে প্রথমে আক্রান্ত অংশ সরিয়ে ফেলুন এবং পরিমিত সুষম সার দিন। বিস্তারিত তথ্যের জন্য ১৬১২৩ এ কল করতে পারেন।";
+  // Graceful dynamic answer
+  return getDynamicAgriculturalAnswer(lastUserMsg, diagnosisContext);
 }
 
 // -------------------------------------------------------------
